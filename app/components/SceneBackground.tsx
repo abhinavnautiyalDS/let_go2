@@ -8,6 +8,7 @@ const staticLayers = [
   "TABLE.png",
   "CUP.png",
   "LAMP.png",
+  "PERSON.png"
 ];
 
 const rainDrops = Array.from({ length: 200 }, (_, i) => ({
