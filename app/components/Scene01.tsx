@@ -918,7 +918,12 @@ export default function Scene01() {
         fireMask[i + 3] = alpha;
       }
 
-      const fireMaskImage = new ImageData(fireMask, SOURCE_W, SOURCE_H);
+      // const fireMaskImage = new ImageData(fireMask, SOURCE_W, SOURCE_H);
+      // fireMaskCtx.clearRect(0, 0, SOURCE_W, SOURCE_H);
+      // fireMaskCtx.putImageData(fireMaskImage, 0, 0);
+
+      const fireMaskImage = fireMaskCtx.createImageData(SOURCE_W, SOURCE_H);
+      fireMaskImage.data.set(fireMask);
       fireMaskCtx.clearRect(0, 0, SOURCE_W, SOURCE_H);
       fireMaskCtx.putImageData(fireMaskImage, 0, 0);
 
@@ -1064,16 +1069,33 @@ export default function Scene01() {
           const edgeCtx = edgeCanvas.getContext("2d");
 
           if (compCtx && burnCtx && charCtx && edgeCtx) {
-            const compImageData = new ImageData(comp, SOURCE_W, SOURCE_H);
+            // const compImageData = new ImageData(comp, SOURCE_W, SOURCE_H);
+            // compCtx.putImageData(compImageData, 0, 0);
+
+            // const burnImageData = new ImageData(burnImg, SOURCE_W, SOURCE_H);
+            // burnCtx.putImageData(burnImageData, 0, 0);
+
+            // const charImageDataObj = new ImageData(charImg, SOURCE_W, SOURCE_H);
+            // charCtx.putImageData(charImageDataObj, 0, 0);
+
+            // const edgeImageDataObj = new ImageData(edgeImg, SOURCE_W, SOURCE_H);
+            // edgeCtx.putImageData(edgeImageDataObj, 0, 0);
+
+
+            const compImageData = compCtx.createImageData(SOURCE_W, SOURCE_H);
+            compImageData.data.set(comp);
             compCtx.putImageData(compImageData, 0, 0);
 
-            const burnImageData = new ImageData(burnImg, SOURCE_W, SOURCE_H);
+            const burnImageData = burnCtx.createImageData(SOURCE_W, SOURCE_H);
+            burnImageData.data.set(burnImg);
             burnCtx.putImageData(burnImageData, 0, 0);
 
-            const charImageDataObj = new ImageData(charImg, SOURCE_W, SOURCE_H);
+            const charImageDataObj = charCtx.createImageData(SOURCE_W, SOURCE_H);
+            charImageDataObj.data.set(charImg);
             charCtx.putImageData(charImageDataObj, 0, 0);
 
-            const edgeImageDataObj = new ImageData(edgeImg, SOURCE_W, SOURCE_H);
+            const edgeImageDataObj = edgeCtx.createImageData(SOURCE_W, SOURCE_H);
+            edgeImageDataObj.data.set(edgeImg);
             edgeCtx.putImageData(edgeImageDataObj, 0, 0);
           }
         }
@@ -1096,10 +1118,19 @@ export default function Scene01() {
         }
       }
 
-      if (hasPreviousRef.current) {
-        previousFrameRef.current.set(px);
+      // if (hasPreviousRef.current) {
+      //   previousFrameRef.current.set(px);
+      // } else {
+      //   previousFrameRef.current.set(px);
+      //   hasPreviousRef.current = true;
+      // }
+
+      const previousFrame = previousFrameRef.current;
+
+      if (previousFrame) {
+        previousFrame.set(px);
       } else {
-        previousFrameRef.current.set(px);
+        previousFrameRef.current = new Uint8ClampedArray(px);
         hasPreviousRef.current = true;
       }
 
