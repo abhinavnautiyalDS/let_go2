@@ -3,11 +3,11 @@
 import { motion } from 'framer-motion';
 
 const staticLayers = [
-  'background.png',
-  'window.png',
-  'table.png',
-  'cup.png',
-  'lamp.png',
+  "BACKGROUND.png",
+  "WINDOW.png",
+  "TABLE.png",
+  "CUP.png",
+  "LAMP.png",
 ];
 
 const rainDrops = Array.from({ length: 200 }, (_, i) => ({
