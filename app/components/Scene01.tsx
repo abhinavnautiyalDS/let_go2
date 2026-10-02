@@ -1417,18 +1417,16 @@ export default function Scene01() {
   useEffect(() => {
     if (postBurnStage !== "affirmation") return;
 
-    // Give each thought four seconds to breathe before the next one arrives.
-    // The fade transition happens within that interval, keeping the sequence
-    // gentle rather than making the lines feel like a slideshow.
+    // Let the LET GO title dissolve first, then give each thought time to land.
     setAffirmationIndex(0);
     const sequenceTimer = window.setInterval(() => {
       setAffirmationIndex((current) => Math.min(current + 1, 4));
-    }, 4000);
+    }, 5200);
 
-    // Four affirmations × four seconds, followed by a short quiet pause.
+    // Four slower thoughts, followed by a quiet breath before the next prompt.
     const finishTimer = trackedTimeout(() => {
       setPostBurnStage("memory");
-    }, 18000);
+    }, 22400);
 
     return () => {
       window.clearInterval(sequenceTimer);
@@ -1948,33 +1946,88 @@ export default function Scene01() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 1.1, delay: 0.45, ease: "easeOut" }}
         >
           <AnimatePresence mode="wait">
             {affirmationIndex < 4 && (
               <motion.div
                 key={affirmationIndex}
                 className="affirmation-line"
-                initial={{ opacity: 0, y: 5, filter: "blur(3px)" }}
+                initial={{ opacity: 0, y: 9, filter: "blur(5px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
-                transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, y: -3, filter: "blur(1.5px)" }}
+                transition={{
+                  opacity: { duration: 0.9, ease: "easeOut" },
+                  y: { duration: 1.15, ease: [0.22, 1, 0.36, 1] },
+                  filter: { duration: 0.9, ease: "easeOut" },
+                }}
               >
-                <span className="affirmation-en">
-                  {[
+                <span className="affirmation-en" aria-label={[
+                  "You can put it down now.",
+                  "You don't have to carry it anymore.",
+                  "What happened can stay in the past.",
+                  "You are free to move forward.",
+                ][affirmationIndex]}>
+                  {Array.from([
                     "You can put it down now.",
                     "You don't have to carry it anymore.",
                     "What happened can stay in the past.",
                     "You are free to move forward.",
-                  ][affirmationIndex]}
+                  ][affirmationIndex]).map((char, index) => (
+                    <motion.span
+                      key={index}
+                      aria-hidden="true"
+                      className="affirmation-glyph"
+                      initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      exit={{
+                        opacity: 0,
+                        y: index % 2 === 0 ? -13 : 10,
+                        x: index % 3 === 0 ? -4 : 4,
+                        scale: 0.82,
+                        filter: "blur(3px)",
+                      }}
+                      transition={{
+                        opacity: { duration: 0.5, delay: index * 0.009 },
+                        y: { duration: 0.75, delay: index * 0.009, ease: "easeOut" },
+                        x: { duration: 0.75, delay: index * 0.009, ease: "easeOut" },
+                        filter: { duration: 0.7, delay: index * 0.009 },
+                      }}
+                    >{char === " " ? "\u00a0" : char}</motion.span>
+                  ))}
                 </span>
-                <span className="affirmation-jp">
-                  {[
+                <span className="affirmation-jp" aria-label={[
+                  "もう、手放していい。",
+                  "もう、抱えていかなくていい。",
+                  "起きたことは、過去に置いていい。",
+                  "これから先へ、進んでいていい。",
+                ][affirmationIndex]}>
+                  {Array.from([
                     "もう、手放していい。",
                     "もう、抱えていかなくていい。",
                     "起きたことは、過去に置いていい。",
                     "これから先へ、進んでいていい。",
-                  ][affirmationIndex]}
+                  ][affirmationIndex]).map((char, index) => (
+                    <motion.span
+                      key={index}
+                      aria-hidden="true"
+                      className="affirmation-glyph"
+                      initial={{ opacity: 0, y: 3 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{
+                        opacity: 0,
+                        y: index % 2 === 0 ? -11 : 8,
+                        x: index % 3 === 0 ? -3 : 3,
+                        scale: 0.85,
+                        filter: "blur(2px)",
+                      }}
+                      transition={{
+                        opacity: { duration: 0.45, delay: index * 0.018 },
+                        y: { duration: 0.7, delay: index * 0.018, ease: "easeOut" },
+                        x: { duration: 0.7, delay: index * 0.018, ease: "easeOut" },
+                      }}
+                    >{char}</motion.span>
+                  ))}
                 </span>
               </motion.div>
             )}
@@ -1983,12 +2036,16 @@ export default function Scene01() {
       )}
 
       {/* ─── LET GO TEXT ───────────────────────────────────────────── */}
-      {showLetGoText && postBurnStage === "release" && (
+      {showLetGoText && (postBurnStage === "release" || postBurnStage === "affirmation") && (
         <motion.div
           className="let-go-text-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2.4, ease: "easeOut" }}
+          initial={{ opacity: 0, scale: 0.985 }}
+          animate={{
+            opacity: postBurnStage === "release" ? 1 : 0,
+            scale: postBurnStage === "release" ? 1 : 1.015,
+            filter: postBurnStage === "release" ? "blur(0px)" : "blur(4px)",
+          }}
+          transition={{ duration: postBurnStage === "release" ? 2.4 : 1.8, ease: "easeInOut" }}
         >
           <p className="let-go-text">LET GO</p>
           <p className="let-go-sub">手放す</p>
