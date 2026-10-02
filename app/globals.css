@@ -2060,38 +2060,158 @@ body {
 }
 
 /* =========================================================
-   MOBILE LANDSCAPE EXPERIENCE
-   Phones cannot reliably be rotated by a website. In portrait,
-   invite the visitor to rotate before entering the immersive ritual.
+   MOBILE ORIENTATION + DEVICE-FIT EXPERIENCE
 ========================================================= */
-@media (max-width: 900px) and (orientation: portrait) {
-  .scene::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    background: rgba(13, 10, 7, 0.97);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
+.mobile-orientation-prompt {
+  display: none;
+}
 
-  .scene::after {
-    content: "↻\A\A LET GO\A\A Turn your phone sideways\A for the full experience.";
-    white-space: pre-line;
+@media (max-width: 900px) and (orientation: portrait) {
+  .mobile-orientation-prompt {
     position: fixed;
     inset: 0;
-    z-index: 10001;
+    z-index: 100000;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 28px;
+    padding: 28px 26px calc(28px + env(safe-area-inset-bottom));
+    overflow: auto;
+    background:
+      radial-gradient(ellipse at 50% 38%, rgba(107, 78, 48, 0.23), transparent 58%),
+      linear-gradient(160deg, rgba(23, 19, 15, 0.98), rgba(9, 8, 7, 0.99));
     color: #f0e3c8;
     text-align: center;
-    font-family: var(--font-family-serif);
-    font-size: clamp(16px, 4vw, 22px);
-    line-height: 1.8;
+  }
+
+  .orientation-icon {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 54px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(240, 227, 200, 0.5);
+    border-radius: 9px;
+    font-size: 35px;
+    line-height: 1;
+    animation: orientation-nudge 2.8s ease-in-out infinite;
+  }
+
+  .orientation-eyebrow {
+    margin: 0 0 12px;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: rgba(240, 227, 200, 0.62);
+  }
+
+  .mobile-orientation-prompt h2 {
+    margin: 0;
+    font-family: "EB Garamond", "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(30px, 9vw, 42px);
+    font-weight: 400;
+    letter-spacing: 0.32em;
+    padding-left: 0.32em;
+  }
+
+  .orientation-copy {
+    max-width: 300px;
+    margin: 18px 0 28px;
+    color: rgba(240, 227, 200, 0.72);
+    font-family: "EB Garamond", "Cormorant Garamond", Georgia, serif;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  .orientation-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-height: 48px;
+    padding: 0 23px;
+    border: 1px solid rgba(240, 227, 200, 0.55);
+    border-radius: 2px;
+    background: rgba(240, 227, 200, 0.08);
+    color: #f0e3c8;
+    font: inherit;
+    font-size: 13px;
     letter-spacing: 0.12em;
-    pointer-events: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 220ms ease, border-color 220ms ease, transform 220ms ease;
+  }
+
+  .orientation-button:active {
+    transform: scale(0.98);
+    background: rgba(240, 227, 200, 0.15);
+  }
+
+  .orientation-skip {
+    margin-top: 16px;
+    padding: 10px 18px;
+    border: 0;
+    background: transparent;
+    color: rgba(240, 227, 200, 0.55);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+
+  .scene--forced-landscape .mobile-orientation-prompt {
+    display: none;
+  }
+}
+
+@keyframes orientation-nudge {
+  0%, 100% { transform: rotate(0deg); opacity: 0.72; }
+  50% { transform: rotate(90deg); opacity: 1; }
+}
+
+/* Simulate landscape inside the page if the device's auto-rotate is off.
+   This rotates the experience, not the physical operating system screen. */
+@media (max-width: 900px) and (orientation: portrait) {
+  .scene.scene--forced-landscape {
+    position: fixed;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    width: 100dvh;
+    height: 100vw;
+    min-height: 0;
+    overflow: hidden;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+  }
+
+  .scene.scene--forced-landscape .begin-container {
+    width: 100%;
+    height: 100%;
+    padding: 10px 20px;
+    transform: none;
+  }
+
+  .scene.scene--forced-landscape .begin-subtitle {
+    max-width: min(80dvh, 420px);
+    margin-bottom: clamp(10px, 3dvh, 26px);
+    font-size: clamp(14px, 2.7dvh, 20px);
+  }
+
+  .scene.scene--forced-landscape .begin-title {
+    font-size: clamp(22px, 5dvh, 34px);
+  }
+
+  .scene.scene--forced-landscape .paper-instruction {
+    left: 50%;
+    top: 54%;
+    width: min(90dvh, 600px);
+    font-size: clamp(15px, 3dvh, 23px);
+    white-space: normal;
+  }
+
+  .scene.scene--forced-landscape .name-input {
+    width: min(65dvh, 420px);
+    font-size: 18px;
   }
 }
 
@@ -2195,3 +2315,61 @@ body {
   }
 }
 
+
+
+/* Use the real viewport dimensions on short/wide phones and avoid
+   unnecessary repaint work without lowering the source artwork quality. */
+@media (max-width: 900px) {
+  .scene,
+  .ritual-container {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .scene .scene-camera {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .scene .layer,
+  .scene .release-rays,
+  .scene .release-dust {
+    backface-visibility: hidden;
+  }
+
+  .scene .raindrop:nth-child(n + 81) {
+    display: none;
+  }
+
+  .scene .film-grain {
+    display: none;
+    animation: none;
+  }
+
+  .scene .steam-video,
+  .scene .burn-fire-source {
+    backface-visibility: hidden;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .mobile-orientation-prompt {
+    display: none;
+  }
+
+  .scene {
+    width: 100vw;
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .scene .paper-instruction {
+    left: 50%;
+    width: min(90vw, 600px);
+    white-space: normal;
+    font-size: clamp(15px, 3.2vh, 23px);
+  }
+
+  .scene .name-input {
+    width: min(65vw, 420px);
+  }
+}
