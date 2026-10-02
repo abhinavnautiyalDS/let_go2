@@ -2229,7 +2229,6 @@ body {
 
   .scene .film-grain,
   .scene .scene-camera .film-grain {
-    display: none;
     animation: none;
   }
 
@@ -2310,7 +2309,6 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .scene .film-grain,
   .scene .scene-camera .film-grain {
-    display: none;
     animation: none;
   }
 }
@@ -2336,12 +2334,7 @@ body {
     backface-visibility: hidden;
   }
 
-  .scene .raindrop:nth-child(n + 81) {
-    display: none;
-  }
-
   .scene .film-grain {
-    display: none;
     animation: none;
   }
 
