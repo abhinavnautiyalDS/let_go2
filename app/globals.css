@@ -2366,3 +2366,75 @@ body {
     width: min(65vw, 420px);
   }
 }
+
+
+/* Bilingual release affirmations: calm, centered, one thought at a time. */
+.affirmation-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.8vh, 16px);
+  width: min(88vw, 900px);
+  padding: 24px;
+  text-align: center;
+  color: #f0e3c8;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.72);
+}
+
+.affirmation-en {
+  display: block;
+  max-width: 100%;
+  font-family: "EB Garamond", "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(24px, 3.2vw, 42px);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0.015em;
+  text-wrap: balance;
+}
+
+.affirmation-jp {
+  display: block;
+  max-width: 100%;
+  font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+  font-size: clamp(16px, 1.8vw, 23px);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  color: rgba(240, 227, 200, 0.78);
+  text-wrap: balance;
+}
+
+@media (max-width: 900px) {
+  .affirmation-line {
+    width: min(90vw, 760px);
+    padding: 16px 22px;
+    gap: 10px;
+  }
+
+  .affirmation-en {
+    font-size: clamp(21px, 4.2vw, 34px);
+    line-height: 1.25;
+  }
+
+  .affirmation-jp {
+    font-size: clamp(16px, 2.7vw, 22px);
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .scene--forced-landscape .affirmation-line {
+    width: min(88dvh, 760px);
+    padding: 12px 18px;
+    gap: 7px;
+  }
+
+  .scene--forced-landscape .affirmation-en {
+    font-size: clamp(20px, 4.2dvh, 32px);
+  }
+
+  .scene--forced-landscape .affirmation-jp {
+    font-size: clamp(15px, 2.7dvh, 21px);
+  }
+}
