@@ -2484,3 +2484,70 @@ body {
     opacity: 1;
   }
 }
+
+
+/* Quiet, smaller post-release affirmations with a soft glyph-dissolve exit. */
+.affirmation-line {
+  width: min(84vw, 760px);
+  padding: 20px 24px;
+  gap: clamp(9px, 1.4vh, 14px);
+}
+
+.affirmation-en {
+  font-size: clamp(19px, 2.25vw, 30px);
+  line-height: 1.45;
+  letter-spacing: 0.025em;
+  font-weight: 400;
+}
+
+.affirmation-jp {
+  font-size: clamp(14px, 1.45vw, 19px);
+  line-height: 1.65;
+  letter-spacing: 0.08em;
+  font-weight: 300;
+}
+
+.affirmation-glyph {
+  display: inline-block;
+  white-space: pre;
+  will-change: transform, opacity, filter;
+}
+
+@media (max-width: 900px) {
+  .affirmation-line {
+    width: min(88vw, 680px);
+    padding: 14px 18px;
+    gap: 9px;
+  }
+
+  .affirmation-en {
+    font-size: clamp(17px, 3.2vw, 25px);
+    line-height: 1.5;
+  }
+
+  .affirmation-jp {
+    font-size: clamp(13px, 2.2vw, 18px);
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .scene--forced-landscape .affirmation-line {
+    width: min(82dvh, 660px);
+    padding: 10px 14px;
+  }
+
+  .scene--forced-landscape .affirmation-en {
+    font-size: clamp(16px, 3.1dvh, 23px);
+  }
+
+  .scene--forced-landscape .affirmation-jp {
+    font-size: clamp(12px, 2.1dvh, 17px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .affirmation-glyph {
+    will-change: auto;
+  }
+}
