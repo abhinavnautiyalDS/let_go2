@@ -1342,16 +1342,18 @@ export default function Scene01() {
   useEffect(() => {
     if (postBurnStage !== "affirmation") return;
 
-    // Start from the first line every time this phase begins, then advance
-    // one bilingual affirmation every three seconds.
+    // Give each thought four seconds to breathe before the next one arrives.
+    // The fade transition happens within that interval, keeping the sequence
+    // gentle rather than making the lines feel like a slideshow.
     setAffirmationIndex(0);
     const sequenceTimer = window.setInterval(() => {
       setAffirmationIndex((current) => Math.min(current + 1, 4));
-    }, 3000);
+    }, 4000);
 
+    // Four affirmations × four seconds, followed by a short quiet pause.
     const finishTimer = trackedTimeout(() => {
       setPostBurnStage("memory");
-    }, 12500);
+    }, 18000);
 
     return () => {
       window.clearInterval(sequenceTimer);
@@ -1875,10 +1877,10 @@ export default function Scene01() {
               <motion.div
                 key={affirmationIndex}
                 className="affirmation-line"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
+                initial={{ opacity: 0, y: 5, filter: "blur(3px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
+                transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
               >
                 <span className="affirmation-en">
                   {[
