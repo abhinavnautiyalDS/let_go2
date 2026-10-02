@@ -257,6 +257,41 @@ export default function Scene01() {
   const [paperBurned, setPaperBurned] = useState(false);
   const [name, setName] = useState("");
   const [forceLandscape, setForceLandscape] = useState(false);
+  const [performanceTier, setPerformanceTier] = useState<"low" | "balanced" | "high">("balanced");
+
+  // Adapt decorative work to the device without lowering source-image quality.
+  // Hardware signals are hints, not a benchmark; unknown devices use balanced mode.
+  useEffect(() => {
+    const nav = navigator as Navigator & {
+      deviceMemory?: number;
+      hardwareConcurrency?: number;
+      connection?: { saveData?: boolean; effectiveType?: string };
+    };
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const memory = nav.deviceMemory;
+    const cores = nav.hardwareConcurrency;
+    const connection = nav.connection;
+    const constrainedNetwork =
+      connection?.saveData === true ||
+      connection?.effectiveType === "slow-2g" ||
+      connection?.effectiveType === "2g";
+
+    if (
+      prefersReducedMotion ||
+      constrainedNetwork ||
+      (memory !== undefined && memory <= 4) ||
+      (cores !== undefined && cores <= 4)
+    ) {
+      setPerformanceTier("low");
+    } else if (
+      memory !== undefined && memory >= 8 &&
+      cores !== undefined && cores >= 8
+    ) {
+      setPerformanceTier("high");
+    } else {
+      setPerformanceTier("balanced");
+    }
+  }, []);
 
   // ─── OTHER STATES ──────────────────────────────────────────────────
   const [worldChanged, setWorldChanged] = useState(false);
@@ -1421,7 +1456,10 @@ export default function Scene01() {
   // ─── RENDER ──────────────────────────────────────────────────────────
 
   return (
-    <main className={`scene${forceLandscape ? " scene--forced-landscape" : ""}`}>
+    <main
+      className={`scene${forceLandscape ? " scene--forced-landscape" : ""}`}
+      data-performance={performanceTier}
+    >
       <div className="mobile-orientation-prompt" role="dialog" aria-modal="true" aria-labelledby="orientation-title">
         <div className="orientation-icon" aria-hidden="true">↻</div>
         <p className="orientation-eyebrow">A QUIETER MOMENT</p>
@@ -1567,7 +1605,7 @@ export default function Scene01() {
             animate={{ opacity: paperBurned ? 0 : 1 }}
             transition={{ duration: 2, ease: "easeInOut" }}
           >
-            {rainDrops.map((drop, i) => (
+            {rainDrops.slice(0, performanceTier === "low" ? 55 : performanceTier === "balanced" ? 120 : rainDrops.length).map((drop, i) => (
               <span
                 key={i}
                 className="raindrop"
