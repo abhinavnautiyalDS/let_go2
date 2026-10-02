@@ -281,6 +281,7 @@ export default function Scene01() {
     | "final";
 
   const [postBurnStage, setPostBurnStage] = useState<PostBurnStage>("idle");
+  const [affirmationIndex, setAffirmationIndex] = useState(0);
   const [showMemoryPrompt, setShowMemoryPrompt] = useState(false);
   const [showCardCheckout, setShowCardCheckout] = useState(false);
   const [showCard, setShowCard] = useState(false);
@@ -1828,24 +1829,37 @@ export default function Scene01() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 4 }}
+          transition={{ duration: 0.6 }}
         >
-          <div className="affirmation-line">
-            <span className="affirmation-en">You can put it down now.</span>
-            <span className="affirmation-jp">もう、手放していい。</span>
-          </div>
-          <div className="affirmation-line">
-            <span className="affirmation-en">You don't have to carry it anymore.</span>
-            <span className="affirmation-jp">もう、抱えていかなくていい。</span>
-          </div>
-          <div className="affirmation-line">
-            <span className="affirmation-en">What happened can stay in the past.</span>
-            <span className="affirmation-jp">起きたことは、過去に置いていい。</span>
-          </div>
-          <div className="affirmation-line">
-            <span className="affirmation-en">You are free to move forward.</span>
-            <span className="affirmation-jp">これから先へ、進んでいい。</span>
-          </div>
+          <AnimatePresence mode="wait">
+            {affirmationIndex < 4 && (
+              <motion.div
+                key={affirmationIndex}
+                className="affirmation-line"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+              >
+                <span className="affirmation-en">
+                  {[
+                    "You can put it down now.",
+                    "You don't have to carry it anymore.",
+                    "What happened can stay in the past.",
+                    "You are free to move forward.",
+                  ][affirmationIndex]}
+                </span>
+                <span className="affirmation-jp">
+                  {[
+                    "もう、手放していい。",
+                    "もう、抱えていかなくていい。",
+                    "起きたことは、過去に置いていい。",
+                    "これから先へ、進んでいていい。",
+                  ][affirmationIndex]}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
 
