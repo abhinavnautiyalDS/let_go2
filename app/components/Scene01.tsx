@@ -256,6 +256,7 @@ export default function Scene01() {
   const [nameLocked, setNameLocked] = useState(false);
   const [paperBurned, setPaperBurned] = useState(false);
   const [name, setName] = useState("");
+  const [forceLandscape, setForceLandscape] = useState(false);
 
   // ─── OTHER STATES ──────────────────────────────────────────────────
   const [worldChanged, setWorldChanged] = useState(false);
@@ -436,9 +437,13 @@ export default function Scene01() {
 
   useEffect(() => {
     const updateCamera = () => {
-      const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
-      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-      const isMobile = viewportWidth < 768;
+      const rawWidth = window.visualViewport?.width ?? window.innerWidth;
+      const rawHeight = window.visualViewport?.height ?? window.innerHeight;
+      // When the visitor taps "Enter landscape", the app rotates inside the
+      // portrait viewport, so its usable width/height are swapped.
+      const viewportWidth = forceLandscape && rawWidth < rawHeight ? rawHeight : rawWidth;
+      const viewportHeight = forceLandscape && rawWidth < rawHeight ? rawWidth : rawHeight;
+      const isMobile = viewportWidth < 1024 || viewportHeight < 600;
       const isTablet = viewportWidth < 1024 && viewportWidth >= 768;
 
       if (isMobile) {
@@ -478,7 +483,7 @@ export default function Scene01() {
       window.removeEventListener("orientationchange", updateCamera);
       window.visualViewport?.removeEventListener("resize", updateCamera);
     };
-  }, [started]);
+  }, [started, forceLandscape]);
 
   // ─── LAMP FLICKER ──────────────────────────────────────────────────
 
@@ -1404,7 +1409,19 @@ export default function Scene01() {
   // ─── RENDER ──────────────────────────────────────────────────────────
 
   return (
-    <main className="scene">
+    <main className={`scene${forceLandscape ? " scene--forced-landscape" : ""}`}>
+      <div className="mobile-orientation-prompt" role="dialog" aria-modal="true" aria-labelledby="orientation-title">
+        <div className="orientation-icon" aria-hidden="true">↻</div>
+        <p className="orientation-eyebrow">A QUIETER MOMENT</p>
+        <h2 id="orientation-title">LET GO</h2>
+        <p className="orientation-copy">Turn your phone sideways for a more immersive experience.</p>
+        <button className="orientation-button" onClick={() => setForceLandscape(true)}>
+          Enter landscape <span aria-hidden="true">→</span>
+        </button>
+        <button className="orientation-skip" onClick={() => setForceLandscape(true)}>
+          Continue
+        </button>
+      </div>
       <audio ref={rainAudio} src={`${AUDIO_BASE}/rain.mp3`} preload="auto" />
       <audio ref={roomAudio} src={`${AUDIO_BASE}/room.mp3`} preload="auto" />
       <audio ref={fireAudio} src={`${AUDIO_BASE}/fire.mp3`} preload="auto" />
