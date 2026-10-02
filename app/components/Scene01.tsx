@@ -436,36 +436,48 @@ export default function Scene01() {
 
   useEffect(() => {
     const updateCamera = () => {
-      const isMobile = window.innerWidth < 768;
-      const isTablet = window.innerWidth < 1024 && window.innerWidth >= 768;
-      const isLandscapeNow = window.innerWidth > window.innerHeight;
+      const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const isMobile = viewportWidth < 768;
+      const isTablet = viewportWidth < 1024 && viewportWidth >= 768;
 
-      if (!started) {
-        if (isMobile && isLandscapeNow) {
-          setCameraTarget({ scale: 1.0, x: -15, y: -100 });
-        } else if (isMobile) {
-          setCameraTarget({ scale: 1.0, x: -10, y: -100 });
-        } else if (isTablet) {
-          setCameraTarget({ scale: 1.15, x: -25, y: -140 });
-        } else {
-          setCameraTarget({ scale: 1.25, x: -35, y: -170 });
-        }
+      if (isMobile) {
+        // Fit the full 16:9 artwork to the actual phone viewport.
+        // This avoids hard-coded offsets that crop different phone sizes.
+        const coverScale = Math.max(
+          viewportWidth / 1672,
+          viewportHeight / 941
+        );
+        const ritualZoom = started ? 1.12 : 1;
+        setCameraTarget({
+          scale: coverScale * ritualZoom,
+          x: 0,
+          y: 0,
+        });
+      } else if (isTablet) {
+        setCameraTarget(
+          started
+            ? { scale: 1.6, x: -90, y: -240 }
+            : { scale: 1.15, x: -25, y: -140 }
+        );
       } else {
-        if (isMobile && isLandscapeNow) {
-          setCameraTarget({ scale: 1.35, x: -50, y: -180 });
-        } else if (isMobile) {
-          setCameraTarget({ scale: 1.4, x: -60, y: -200 });
-        } else if (isTablet) {
-          setCameraTarget({ scale: 1.6, x: -90, y: -240 });
-        } else {
-          setCameraTarget({ scale: 1.75, x: -120, y: -280 });
-        }
+        setCameraTarget(
+          started
+            ? { scale: 1.75, x: -120, y: -280 }
+            : { scale: 1.25, x: -35, y: -170 }
+        );
       }
     };
 
     updateCamera();
     window.addEventListener("resize", updateCamera);
-    return () => window.removeEventListener("resize", updateCamera);
+    window.addEventListener("orientationchange", updateCamera);
+    window.visualViewport?.addEventListener("resize", updateCamera);
+    return () => {
+      window.removeEventListener("resize", updateCamera);
+      window.removeEventListener("orientationchange", updateCamera);
+      window.visualViewport?.removeEventListener("resize", updateCamera);
+    };
   }, [started]);
 
   // ─── LAMP FLICKER ──────────────────────────────────────────────────
