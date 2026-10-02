@@ -1342,11 +1342,21 @@ export default function Scene01() {
   useEffect(() => {
     if (postBurnStage !== "affirmation") return;
 
-    const timer = trackedTimeout(() => {
-      setPostBurnStage("memory");
-    }, 9000);
+    // Start from the first line every time this phase begins, then advance
+    // one bilingual affirmation every three seconds.
+    setAffirmationIndex(0);
+    const sequenceTimer = window.setInterval(() => {
+      setAffirmationIndex((current) => Math.min(current + 1, 4));
+    }, 3000);
 
-    return () => window.clearTimeout(timer);
+    const finishTimer = trackedTimeout(() => {
+      setPostBurnStage("memory");
+    }, 12500);
+
+    return () => {
+      window.clearInterval(sequenceTimer);
+      window.clearTimeout(finishTimer);
+    };
   }, [postBurnStage]);
 
   // ─── MEMORY PROMPT / CARD ──────────────────────────────────────────
