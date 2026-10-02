@@ -2441,3 +2441,51 @@ body {
     transition: none !important;
   }
 }
+
+
+/* Adaptive rendering: preserve full-resolution artwork, trim costly decoration
+   only when the device's measured frame rate indicates sustained pressure. */
+.scene[data-performance="low"] .film-grain {
+  display: none;
+}
+
+.scene[data-performance="low"] .lamp-glow,
+.scene[data-performance="low"] .ash-warm-glow {
+  filter: none;
+}
+
+.scene[data-performance="low"] .release-rays,
+.scene[data-performance="low"] .release-dust {
+  animation: none !important;
+  transition: none !important;
+}
+
+.scene[data-performance="low"] .person-breathing {
+  animation-play-state: paused;
+}
+
+.scene[data-performance="balanced"] .film-grain {
+  animation-duration: 1.2s;
+}
+
+@media (max-width: 900px) {
+  .scene .scene-camera,
+  .scene .layer,
+  .scene .burn-fire-canvas,
+  .scene .burn-paper-canvas,
+  .scene .burn-ash-canvas {
+    backface-visibility: hidden;
+  }
+
+  .scene .scene-camera {
+    will-change: transform, opacity;
+    transform-origin: center center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene[data-performance="low"] .release-rays,
+  .scene[data-performance="low"] .release-dust {
+    animation: none !important;
+  }
+}
