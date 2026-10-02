@@ -709,6 +709,7 @@ export default function Scene01() {
   const lowResEdgeCanvas = useRef<HTMLCanvasElement | null>(null);
   const fireMaskCanvas = useRef<HTMLCanvasElement | null>(null);
   const sourceCanvas = useRef<HTMLCanvasElement | null>(null);
+  const maskedFireCanvas = useRef<HTMLCanvasElement | null>(null);
 
   const compositorReady = useRef(false);
   const compositorStarted = useRef(false);
@@ -949,6 +950,13 @@ export default function Scene01() {
     const fireMaskCtx = fireMaskCanvas.current.getContext("2d", { willReadFrequently: true });
     if (!fireMaskCtx) { compositorStarted.current = false; return; }
 
+    if (!maskedFireCanvas.current) {
+      const masked = document.createElement("canvas");
+      masked.width = SOURCE_W;
+      masked.height = SOURCE_H;
+      maskedFireCanvas.current = masked;
+    }
+
     if (!lowResCompositeCanvas.current) {
       const comp = document.createElement("canvas");
       comp.width = SOURCE_W;
@@ -1061,20 +1069,18 @@ export default function Scene01() {
       fireMaskCtx.putImageData(fireMaskImage, 0, 0);
 
       const fireCtx = fireCanvas.getContext("2d");
-      if (fireCtx) {
+      const masked = maskedFireCanvas.current;
+      const mCtx = masked?.getContext("2d");
+      if (fireCtx && masked && mCtx) {
         fireCtx.clearRect(0, 0, W, H);
         fireCtx.imageSmoothingEnabled = true;
-        const masked = document.createElement("canvas");
-        masked.width = SOURCE_W;
-        masked.height = SOURCE_H;
-        const mCtx = masked.getContext("2d");
-        if (mCtx) {
-          mCtx.drawImage(video, 0, 0, SOURCE_W, SOURCE_H);
-          mCtx.globalCompositeOperation = "destination-in";
-          mCtx.drawImage(fireMaskCanvas.current!, 0, 0);
-          mCtx.globalCompositeOperation = "source-over";
-          fireCtx.drawImage(masked, 0, 0, W, H);
-        }
+        mCtx.clearRect(0, 0, SOURCE_W, SOURCE_H);
+        mCtx.globalCompositeOperation = "source-over";
+        mCtx.drawImage(video, 0, 0, SOURCE_W, SOURCE_H);
+        mCtx.globalCompositeOperation = "destination-in";
+        mCtx.drawImage(fireMaskCanvas.current!, 0, 0);
+        mCtx.globalCompositeOperation = "source-over";
+        fireCtx.drawImage(masked, 0, 0, W, H);
       }
 
       const burnHasReachedEnd =
@@ -1584,6 +1590,8 @@ export default function Scene01() {
             src={`${ASSET_BASE}/PERSON.png`}
             className="layer person-breathing"
             alt=""
+            loading="eager"
+            decoding="async"
             animate={{ scaleY: [1, 1.007, 1] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -1594,6 +1602,8 @@ export default function Scene01() {
               src={`${ASSET_BASE}/${layer}`}
               className="layer"
               alt=""
+              loading="eager"
+              decoding="async"
               animate={{ opacity: 1 }}
               transition={{ duration: 0 }}
             />
