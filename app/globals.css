@@ -2438,3 +2438,49 @@ body {
     font-size: clamp(15px, 2.7dvh, 21px);
   }
 }
+
+
+/* Smooth, decoded scene reveal and a lightweight full-screen route fade. */
+.scene .scene-camera {
+  opacity: 0;
+  transition: opacity 420ms ease-out;
+}
+
+.scene .scene-camera.scene-camera--ready {
+  opacity: 1;
+}
+
+.route-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  background: #090806;
+  will-change: opacity;
+}
+
+.scene-background-container .scene-camera {
+  opacity: 0;
+  animation: home-scene-reveal 700ms ease-out 80ms forwards;
+}
+
+@keyframes home-scene-reveal {
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene .scene-camera,
+  .scene-background-container .scene-camera,
+  .route-transition-overlay {
+    animation: none;
+    transition: none;
+  }
+
+  .scene .scene-camera {
+    opacity: 1;
+  }
+
+  .scene-background-container .scene-camera {
+    opacity: 1;
+  }
+}
