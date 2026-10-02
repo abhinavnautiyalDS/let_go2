@@ -349,6 +349,35 @@ export default function Scene01() {
     }
   }, []);
 
+  // Refine hardware-based performance hints with a short real frame-rate sample.
+  // The sample runs once after the core scene is ready; it never changes settings per frame.
+  useEffect(() => {
+    if (!sceneAssetsReady) return;
+
+    let raf = 0;
+    let frames = 0;
+    const start = performance.now();
+
+    const sample = (now: number) => {
+      frames += 1;
+      const elapsed = now - start;
+
+      if (elapsed >= 1800) {
+        const fps = (frames * 1000) / elapsed;
+        if (fps < 36) {
+          setPerformanceTier("low");
+        } else if (fps < 50 && performanceTier === "high") {
+          setPerformanceTier("balanced");
+        }
+        return;
+      }
+      raf = requestAnimationFrame(sample);
+    };
+
+    raf = requestAnimationFrame(sample);
+    return () => cancelAnimationFrame(raf);
+  }, [sceneAssetsReady, performanceTier]);
+
   // ─── OTHER STATES ──────────────────────────────────────────────────
   const [worldChanged, setWorldChanged] = useState(false);
   const [flicker, setFlicker] = useState(false);
@@ -1607,15 +1636,13 @@ export default function Scene01() {
           />
 
           {staticLayers.map((layer) => (
-            <motion.img
+            <img
               key={layer}
               src={`${ASSET_BASE}/${layer}`}
               className="layer"
               alt=""
               loading="eager"
               decoding="async"
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0 }}
             />
           ))}
 
