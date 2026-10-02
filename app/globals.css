@@ -2168,153 +2168,6 @@ body {
   50% { transform: rotate(90deg); opacity: 1; }
 }
 
-/* Simulate landscape inside the page if the device's auto-rotate is off.
-   This rotates the experience, not the physical operating system screen. */
-@media (max-width: 900px) and (orientation: portrait) {
-  .scene.scene--forced-landscape {
-    position: fixed;
-    z-index: 1;
-    top: 50%;
-    left: 50%;
-    width: 100dvh;
-    height: 100vw;
-    min-height: 0;
-    overflow: hidden;
-    transform: translate(-50%, -50%) rotate(90deg);
-    transform-origin: center center;
-  }
-
-  .scene.scene--forced-landscape .begin-container {
-    width: 100%;
-    height: 100%;
-    padding: 10px 20px;
-    transform: none;
-  }
-
-  .scene.scene--forced-landscape .begin-subtitle {
-    max-width: min(80dvh, 420px);
-    margin-bottom: clamp(10px, 3dvh, 26px);
-    font-size: clamp(14px, 2.7dvh, 20px);
-  }
-
-  .scene.scene--forced-landscape .begin-title {
-    font-size: clamp(22px, 5dvh, 34px);
-  }
-
-  .scene.scene--forced-landscape .paper-instruction {
-    left: 50%;
-    top: 54%;
-    width: min(90dvh, 600px);
-    font-size: clamp(15px, 3dvh, 23px);
-    white-space: normal;
-  }
-
-  .scene.scene--forced-landscape .name-input {
-    width: min(65dvh, 420px);
-    font-size: 18px;
-  }
-}
-
-/* Keep the cinematic scene responsive while reducing costly effects
-   on phones. The ritual's essential animation and audio remain intact. */
-@media (max-width: 768px) {
-  .scene,
-  .ritual-container {
-    width: 100%;
-    min-height: 100%;
-    min-height: 100dvh;
-    overscroll-behavior: none;
-    touch-action: manipulation;
-  }
-
-  .scene .film-grain,
-  .scene .scene-camera .film-grain {
-    animation: none;
-  }
-
-  .scene .lamp-glow {
-    filter: blur(3px);
-  }
-
-  .scene .steam-video {
-    max-width: 100%;
-  }
-
-  .begin-container {
-    transform: none;
-    padding: 16px;
-  }
-
-  .begin-title {
-    font-size: clamp(24px, 5vw, 34px);
-    letter-spacing: 0.28em;
-  }
-
-  .begin-subtitle {
-    max-width: min(80vw, 420px);
-    font-size: clamp(15px, 2.8vw, 20px);
-    margin-bottom: clamp(18px, 4vh, 40px);
-  }
-
-  .paper-instruction {
-    left: 50%;
-    width: min(90vw, 600px);
-    white-space: normal;
-    font-size: clamp(16px, 2.8vw, 23px);
-  }
-
-  .name-input {
-    width: min(72vw, 420px);
-    font-size: 18px;
-  }
-
-  .breathing-overlay,
-  .let-go-text-overlay,
-  .affirmation-sequence {
-    padding: 20px;
-  }
-}
-
-/* Landscape phones: use the available viewport without page scrolling. */
-@media (max-width: 900px) and (orientation: landscape) {
-  html,
-  body {
-    overflow: hidden;
-    overscroll-behavior: none;
-  }
-
-  .scene {
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-  }
-
-  .begin-container {
-    transform: none;
-  }
-
-  .begin-subtitle {
-    margin-bottom: clamp(12px, 3vh, 28px);
-  }
-
-  .begin-title {
-    margin-bottom: 8px;
-  }
-
-  .begin-divider {
-    margin-bottom: 12px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scene .film-grain,
-  .scene .scene-camera .film-grain {
-    animation: none;
-  }
-}
-
-
-
 /* Use the real viewport dimensions on short/wide phones and avoid
    unnecessary repaint work without lowering the source artwork quality. */
 @media (max-width: 900px) {
@@ -2423,22 +2276,6 @@ body {
   }
 }
 
-@media (max-width: 900px) and (orientation: portrait) {
-  .scene--forced-landscape .affirmation-line {
-    width: min(88dvh, 760px);
-    padding: 12px 18px;
-    gap: 7px;
-  }
-
-  .scene--forced-landscape .affirmation-en {
-    font-size: clamp(20px, 4.2dvh, 32px);
-  }
-
-  .scene--forced-landscape .affirmation-jp {
-    font-size: clamp(15px, 2.7dvh, 21px);
-  }
-}
-
 
 /* Smooth, decoded scene reveal and a lightweight full-screen route fade. */
 .scene .scene-camera {
@@ -2531,23 +2368,38 @@ body {
   }
 }
 
-@media (max-width: 900px) and (orientation: portrait) {
-  .scene--forced-landscape .affirmation-line {
-    width: min(82dvh, 660px);
-    padding: 10px 14px;
-  }
-
-  .scene--forced-landscape .affirmation-en {
-    font-size: clamp(16px, 3.1dvh, 23px);
-  }
-
-  .scene--forced-landscape .affirmation-jp {
-    font-size: clamp(12px, 2.1dvh, 17px);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .affirmation-glyph {
     will-change: auto;
+  }
+}
+
+
+/* Native fullscreen/orientation mode: no fake CSS rotation. */
+.orientation-error {
+  max-width: 300px;
+  margin: 14px 0 0;
+  color: rgba(240, 227, 200, 0.48);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .scene .scene-camera,
+  .scene .layer,
+  .scene .burn-fire-canvas,
+  .scene .burn-paper-canvas,
+  .scene .burn-ash-canvas {
+    backface-visibility: hidden;
+  }
+
+  .scene .scene-camera {
+    will-change: transform, opacity;
+    transform-origin: center center;
+  }
+
+  /* Keep the full atmospheric rain on phones; only its transforms animate. */
+  .scene .raindrop {
+    will-change: transform;
   }
 }
