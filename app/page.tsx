@@ -1,10 +1,22 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
 import SceneBackground from '@/app/components/SceneBackground';
 
 export default function HomePage() {
+  const router = useRouter();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const enterRitual = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    window.setTimeout(() => router.push('/ritual'), 260);
+  };
+
   return (
     <main className="home-page">
       <div className="home-bg">
@@ -100,7 +112,7 @@ export default function HomePage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5, delay: 4.8, ease: 'easeOut' }}
         >
-          <Link href="/ritual" className="begin-hero">
+          <Link href="/ritual" className="begin-hero" onClick={enterRitual}>
             BEGIN THE RITUAL
           </Link>
         </motion.div>
@@ -125,6 +137,14 @@ export default function HomePage() {
           <span>Scroll to explore</span>
         </motion.div>
       </div>
+
+      <motion.div
+        className="route-transition-overlay"
+        initial={false}
+        animate={{ opacity: isTransitioning ? 1 : 0 }}
+        transition={{ duration: 0.24, ease: 'easeInOut' }}
+        aria-hidden="true"
+      />
     </main>
   );
 }
