@@ -257,6 +257,7 @@ export default function Scene01() {
   const [paperBurned, setPaperBurned] = useState(false);
   const [name, setName] = useState("");
   const [landscapeError, setLandscapeError] = useState(false);
+  const [orientationDismissed, setOrientationDismissed] = useState(false);
   const [performanceTier, setPerformanceTier] = useState<"low" | "balanced" | "high">("balanced");
   const [sceneAssetsReady, setSceneAssetsReady] = useState(false);
 
@@ -520,6 +521,7 @@ export default function Scene01() {
       }
 
       await orientation.lock("landscape");
+      setOrientationDismissed(true);
     } catch (error) {
       console.warn("Landscape lock unavailable:", error);
       setLandscapeError(true);
@@ -1544,7 +1546,13 @@ export default function Scene01() {
       className="scene"
       data-performance={performanceTier}
     >
-      <div className="mobile-orientation-prompt" role="dialog" aria-modal="true" aria-labelledby="orientation-title">
+      <div
+        className="mobile-orientation-prompt"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="orientation-title"
+        data-dismissed={orientationDismissed ? "true" : "false"}
+      >
         <div className="orientation-icon" aria-hidden="true">↻</div>
         <p className="orientation-eyebrow">A QUIETER MOMENT</p>
         <h2 id="orientation-title">LET GO</h2>
@@ -1557,9 +1565,11 @@ export default function Scene01() {
             Your browser did not allow automatic landscape mode. Rotate the phone once, then continue.
           </p>
         )}
-        <button className="orientation-skip" onClick={() => setLandscapeError(false)}>
-          Continue
-        </button>
+        {landscapeError && (
+          <button className="orientation-skip" onClick={() => setOrientationDismissed(true)}>
+            Continue anyway
+          </button>
+        )}
       </div>
       <audio ref={rainAudio} src={`${AUDIO_BASE}/rain.mp3`} preload="auto" />
       <audio ref={roomAudio} src={`${AUDIO_BASE}/room.mp3`} preload="auto" />
