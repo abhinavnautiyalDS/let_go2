@@ -2407,3 +2407,37 @@ body {
     will-change: transform;
   }
 }
+
+
+/* Keep the illustration crisp while reducing purely decorative GPU work
+   on constrained phones. The source artwork and fire resolution are unchanged. */
+.scene[data-performance="low"] .film-grain {
+  display: none;
+}
+
+.scene[data-performance="low"] .scene-camera {
+  will-change: opacity;
+}
+
+@media (max-width: 900px) {
+  .scene[data-performance="low"] .steam-video {
+    opacity: 0.24;
+  }
+
+  .scene[data-performance="low"] .lamp-glow {
+    filter: none;
+    opacity: 0.78;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene .person-breathing,
+  .scene .breath-scale-wrapper {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .scene .affirmation-glyph {
+    transition: none !important;
+  }
+}
