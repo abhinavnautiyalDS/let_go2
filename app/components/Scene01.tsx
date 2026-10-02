@@ -1948,7 +1948,7 @@ export default function Scene01() {
           exit={{ opacity: 0 }}
           transition={{ duration: 1.1, delay: 0.45, ease: "easeOut" }}
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" propagate>
             {affirmationIndex < 4 && (
               <motion.div
                 key={affirmationIndex}
