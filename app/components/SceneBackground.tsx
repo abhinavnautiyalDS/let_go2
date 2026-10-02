@@ -22,10 +22,15 @@ const rainDrops = Array.from({ length: 200 }, (_, i) => ({
 
 export default function SceneBackground() {
   return (
-    <div className="scene-background-container">
+    <>
+      <link rel="preload" as="image" href="/assets/scene-01/BACKGROUND.png" fetchPriority="high" />
+      <link rel="preload" as="image" href="/assets/scene-01/WINDOW.png" />
+      <link rel="preload" as="image" href="/assets/scene-01/TABLE.png" />
+      <link rel="preload" as="image" href="/assets/scene-01/PERSON.png" />
+      <div className="scene-background-container">
       <div className="scene-camera">
         <motion.img
-          src="/assets/scene-01/person.png"
+          src="/assets/scene-01/PERSON.png"
           className="layer person-breathing"
           alt=""
           animate={{ scaleY: [1, 1.007, 1] }}
@@ -89,6 +94,7 @@ export default function SceneBackground() {
 
         <div className="film-grain" />
       </div>
-    </div>
+      </div>
+    </>
   );
 }
