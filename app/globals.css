@@ -2058,3 +2058,140 @@ body {
     font-size: 15px;
   }
 }
+
+/* =========================================================
+   MOBILE LANDSCAPE EXPERIENCE
+   Phones cannot reliably be rotated by a website. In portrait,
+   invite the visitor to rotate before entering the immersive ritual.
+========================================================= */
+@media (max-width: 900px) and (orientation: portrait) {
+  .scene::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(13, 10, 7, 0.97);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .scene::after {
+    content: "↻\A\A LET GO\A\A Turn your phone sideways\A for the full experience.";
+    white-space: pre-line;
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    color: #f0e3c8;
+    text-align: center;
+    font-family: var(--font-family-serif);
+    font-size: clamp(16px, 4vw, 22px);
+    line-height: 1.8;
+    letter-spacing: 0.12em;
+    pointer-events: none;
+  }
+}
+
+/* Keep the cinematic scene responsive while reducing costly effects
+   on phones. The ritual's essential animation and audio remain intact. */
+@media (max-width: 768px) {
+  .scene,
+  .ritual-container {
+    width: 100%;
+    min-height: 100%;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  .scene .film-grain,
+  .scene .scene-camera .film-grain {
+    display: none;
+    animation: none;
+  }
+
+  .scene .lamp-glow {
+    filter: blur(3px);
+  }
+
+  .scene .steam-video {
+    max-width: 100%;
+  }
+
+  .begin-container {
+    transform: none;
+    padding: 16px;
+  }
+
+  .begin-title {
+    font-size: clamp(24px, 5vw, 34px);
+    letter-spacing: 0.28em;
+  }
+
+  .begin-subtitle {
+    max-width: min(80vw, 420px);
+    font-size: clamp(15px, 2.8vw, 20px);
+    margin-bottom: clamp(18px, 4vh, 40px);
+  }
+
+  .paper-instruction {
+    left: 50%;
+    width: min(90vw, 600px);
+    white-space: normal;
+    font-size: clamp(16px, 2.8vw, 23px);
+  }
+
+  .name-input {
+    width: min(72vw, 420px);
+    font-size: 18px;
+  }
+
+  .breathing-overlay,
+  .let-go-text-overlay,
+  .affirmation-sequence {
+    padding: 20px;
+  }
+}
+
+/* Landscape phones: use the available viewport without page scrolling. */
+@media (max-width: 900px) and (orientation: landscape) {
+  html,
+  body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .scene {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .begin-container {
+    transform: none;
+  }
+
+  .begin-subtitle {
+    margin-bottom: clamp(12px, 3vh, 28px);
+  }
+
+  .begin-title {
+    margin-bottom: 8px;
+  }
+
+  .begin-divider {
+    margin-bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene .film-grain,
+  .scene .scene-camera .film-grain {
+    display: none;
+    animation: none;
+  }
+}
+
