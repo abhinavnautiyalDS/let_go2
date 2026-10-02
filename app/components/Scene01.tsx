@@ -256,7 +256,7 @@ export default function Scene01() {
   const [nameLocked, setNameLocked] = useState(false);
   const [paperBurned, setPaperBurned] = useState(false);
   const [name, setName] = useState("");
-  const [forceLandscape, setForceLandscape] = useState(false);
+  const [landscapeError, setLandscapeError] = useState(false);
   const [performanceTier, setPerformanceTier] = useState<"low" | "balanced" | "high">("balanced");
   const [sceneAssetsReady, setSceneAssetsReady] = useState(false);
 
@@ -275,22 +275,37 @@ export default function Scene01() {
       "PAPER.png",
     ];
 
-    Promise.all(
-      coreImages.map((file) => new Promise<void>((resolve) => {
+    const preload = (file: string) =>
+      new Promise<void>((resolve) => {
         const img = new Image();
+        let settled = false;
+
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          resolve();
+        };
+
+        img.decoding = "async";
+        img.fetchPriority = "high";
         img.onload = async () => {
           try {
             if (typeof img.decode === "function") await img.decode();
           } catch {
-            // A successfully loaded image can still be usable if decode() rejects.
+            // The loaded image can still be used when decode() is unavailable.
+          } finally {
+            finish();
           }
-          resolve();
         };
-        img.onerror = () => resolve();
+        img.onerror = finish;
         img.src = `${ASSET_BASE}/${file}`;
-        if (img.complete) resolve();
-      }))
-    ).then(() => {
+
+        if (img.complete && img.naturalWidth > 0) {
+          img.decode?.().catch(() => {}).finally(finish);
+        }
+      });
+
+    Promise.all(coreImages.map(preload)).then(() => {
       if (!cancelled) setSceneAssetsReady(true);
     });
 
@@ -487,20 +502,49 @@ export default function Scene01() {
     fadeAudio(audio, volume, 2500);
   };
 
-  // ─── FULLSCREEN TOGGLE ─────────────────────────────────────────────
+  // ─── MOBILE LANDSCAPE / FULLSCREEN ───────────────────────────────
 
-  const toggleFullscreen = () => {
-    const element = document.documentElement;
-    if (!document.fullscreenElement) {
-      element.requestFullscreen?.().catch((err) => {
-        console.warn("Fullscreen error:", err.message);
-      });
-    } else {
-      document.exitFullscreen?.().catch((err) => {
-        console.warn("Exit fullscreen error:", err.message);
-      });
+  const enterLandscape = async () => {
+    setLandscapeError(false);
+
+    try {
+      const element = document.documentElement;
+
+      if (!document.fullscreenElement && element.requestFullscreen) {
+        await element.requestFullscreen();
+      }
+
+      const orientation = screen.orientation;
+      if (!orientation?.lock) {
+        throw new Error("Screen orientation lock is not supported");
+      }
+
+      await orientation.lock("landscape");
+    } catch (error) {
+      console.warn("Landscape lock unavailable:", error);
+      setLandscapeError(true);
     }
   };
+
+  const ensureFullscreen = () => {
+    if (document.fullscreenElement || !document.documentElement.requestFullscreen) return;
+    document.documentElement.requestFullscreen().catch(() => {});
+  };
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement && screen.orientation?.unlock) {
+        try {
+          screen.orientation.unlock();
+        } catch {
+          // Ignore browser-specific unlock failures.
+        }
+      }
+    };
+
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
 
   // ─── RESPONSIVE CAMERA ──────────────────────────────────────────────
 
@@ -512,12 +556,8 @@ export default function Scene01() {
 
   useEffect(() => {
     const updateCamera = () => {
-      const rawWidth = window.visualViewport?.width ?? window.innerWidth;
-      const rawHeight = window.visualViewport?.height ?? window.innerHeight;
-      // When the visitor taps "Enter landscape", the app rotates inside the
-      // portrait viewport, so its usable width/height are swapped.
-      const viewportWidth = forceLandscape && rawWidth < rawHeight ? rawHeight : rawWidth;
-      const viewportHeight = forceLandscape && rawWidth < rawHeight ? rawWidth : rawHeight;
+      const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
       const isMobile = viewportWidth < 1024 || viewportHeight < 600;
       const isTablet = viewportWidth < 1024 && viewportWidth >= 768;
 
@@ -558,7 +598,7 @@ export default function Scene01() {
       window.removeEventListener("orientationchange", updateCamera);
       window.visualViewport?.removeEventListener("resize", updateCamera);
     };
-  }, [started, forceLandscape]);
+  }, [started]);
 
   // ─── LAMP FLICKER ──────────────────────────────────────────────────
 
@@ -584,7 +624,7 @@ export default function Scene01() {
   // ─── BEGIN BUTTON → CAMERA MOVEMENT + PAPER ─────────────────────
 
   const handleBeginRitual = () => {
-    toggleFullscreen();
+    ensureFullscreen();
     setStarted(true); // Triggers camera animation
     setShowPaper(true); // Paper will appear after camera settles
     playOnce(clickAudio.current, 0.2);
@@ -1495,7 +1535,7 @@ export default function Scene01() {
 
   return (
     <main
-      className={`scene${forceLandscape ? " scene--forced-landscape" : ""}`}
+      className="scene"
       data-performance={performanceTier}
     >
       <div className="mobile-orientation-prompt" role="dialog" aria-modal="true" aria-labelledby="orientation-title">
@@ -1503,10 +1543,15 @@ export default function Scene01() {
         <p className="orientation-eyebrow">A QUIETER MOMENT</p>
         <h2 id="orientation-title">LET GO</h2>
         <p className="orientation-copy">Turn your phone sideways for a more immersive experience.</p>
-        <button className="orientation-button" onClick={() => setForceLandscape(true)}>
+        <button className="orientation-button" onClick={enterLandscape}>
           Enter landscape <span aria-hidden="true">→</span>
         </button>
-        <button className="orientation-skip" onClick={() => setForceLandscape(true)}>
+        {landscapeError && (
+          <p className="orientation-error">
+            Your browser did not allow automatic landscape mode. Rotate the phone once, then continue.
+          </p>
+        )}
+        <button className="orientation-skip" onClick={() => setLandscapeError(false)}>
           Continue
         </button>
       </div>
