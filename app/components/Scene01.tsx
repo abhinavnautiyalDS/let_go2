@@ -258,6 +258,46 @@ export default function Scene01() {
   const [name, setName] = useState("");
   const [forceLandscape, setForceLandscape] = useState(false);
   const [performanceTier, setPerformanceTier] = useState<"low" | "balanced" | "high">("balanced");
+  const [sceneAssetsReady, setSceneAssetsReady] = useState(false);
+
+  // Decode the core room artwork before revealing the scene, avoiding a
+  // visible sequence of individual image pop-ins on slower phones.
+  useEffect(() => {
+    let cancelled = false;
+    const coreImages = [
+      "BACKGROUND.png",
+      "WINDOW.png",
+      "TABLE.png",
+      "CUP.png",
+      "LAMP.png",
+      "PERSON.png",
+      "CURTAIN.png",
+      "PAPER.png",
+    ];
+
+    Promise.all(
+      coreImages.map((file) => new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = async () => {
+          try {
+            if (typeof img.decode === "function") await img.decode();
+          } catch {
+            // A successfully loaded image can still be usable if decode() rejects.
+          }
+          resolve();
+        };
+        img.onerror = () => resolve();
+        img.src = `${ASSET_BASE}/${file}`;
+        if (img.complete) resolve();
+      }))
+    ).then(() => {
+      if (!cancelled) setSceneAssetsReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Adapt decorative work to the device without lowering source-image quality.
   // Hardware signals are hints, not a benchmark; unknown devices use balanced mode.
@@ -1483,7 +1523,7 @@ export default function Scene01() {
 
       <motion.div
         ref={sceneCameraRef}
-        className="scene-camera"
+        className={`scene-camera${sceneAssetsReady ? " scene-camera--ready" : ""}`}
         initial={{ scale: 1, x: 0, y: 0 }}
         animate={{ scale: cameraTarget.scale, x: cameraTarget.x, y: cameraTarget.y }}
         transition={{ duration: started ? 5 : 12, ease: [0.22, 1, 0.36, 1] }}
@@ -1545,7 +1585,7 @@ export default function Scene01() {
               src={`${ASSET_BASE}/fire-sources.mp4`}
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
             />
           </div>
 
