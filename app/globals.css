@@ -2066,6 +2066,10 @@ body {
   display: none;
 }
 
+.mobile-orientation-prompt[data-dismissed="true"] {
+  display: none !important;
+}
+
 @media (max-width: 900px) and (orientation: portrait) {
   .mobile-orientation-prompt {
     position: fixed;
