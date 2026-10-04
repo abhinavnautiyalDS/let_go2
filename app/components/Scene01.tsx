@@ -604,7 +604,9 @@ export default function Scene01() {
           viewportWidth / 1672,
           viewportHeight / 941
         );
-        const ritualZoom = started ? 1.12 : 1;
+        // Zoom toward the paper only during the writing/burning ritual.
+        // Once the burn completes, return to the original wide room framing.
+        const ritualZoom = started && !paperBurned ? 1.12 : 1;
         setCameraTarget({
           scale: coverScale * ritualZoom,
           x: 0,
@@ -612,13 +614,13 @@ export default function Scene01() {
         });
       } else if (isTablet) {
         setCameraTarget(
-          started
+          started && !paperBurned
             ? { scale: 1.6, x: -90, y: -240 }
             : { scale: 1.15, x: -25, y: -140 }
         );
       } else {
         setCameraTarget(
-          started
+          started && !paperBurned
             ? { scale: 1.75, x: -120, y: -280 }
             : { scale: 1, x: 0, y: 0 }
         );
@@ -634,7 +636,7 @@ export default function Scene01() {
       window.removeEventListener("orientationchange", updateCamera);
       window.visualViewport?.removeEventListener("resize", updateCamera);
     };
-  }, [started, roomEntered]);
+  }, [started, roomEntered, paperBurned]);
 
   // ─── LAMP FLICKER ──────────────────────────────────────────────────
 
