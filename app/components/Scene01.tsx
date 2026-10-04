@@ -674,13 +674,13 @@ export default function Scene01() {
     const rain = rainAudio.current;
     if (!rain) return;
     rain.loop = true;
-    rain.volume = 0.28;
+    rain.volume = 0.38;
     rain.play().catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!started) return;
-    fadeAudio(rainAudio.current, 0.24, 3000);
+    fadeAudio(rainAudio.current, 0.36, 3000);
     playLoop(roomAudio.current, 0.14);
   }, [started]);
 
@@ -1414,7 +1414,7 @@ export default function Scene01() {
     // to settle before the first inhale/exhale cue appears.
     const timer = trackedTimeout(() => {
       setPostBurnStage("breathing");
-    }, 5700);
+    }, 9350);
     return () => window.clearTimeout(timer);
   }, [postBurnStage]);
 
@@ -1759,7 +1759,7 @@ export default function Scene01() {
 
           <motion.div
             className="rain"
-            animate={{ opacity: paperBurned ? 0 : 1 }}
+            animate={{ opacity: postBurnStage === "release" || postBurnStage === "affirmation" || postBurnStage === "memory" || postBurnStage === "checkout" || postBurnStage === "card" || postBurnStage === "donation" || postBurnStage === "final" ? 0 : 1 }}
             transition={{ duration: 2, ease: "easeInOut" }}
           >
             {rainDrops.slice(0, performanceTier === "low" ? 55 : performanceTier === "balanced" ? 120 : rainDrops.length).map((drop, i) => (
@@ -1926,7 +1926,7 @@ export default function Scene01() {
                   const rain = rainAudio.current;
                   if (rain) {
                     rain.loop = true;
-                    rain.volume = 0.16;
+                    rain.volume = 0.38;
                     rain.play().catch(() => {});
                   }
                   playOnce(clickAudio.current, 0.15);
@@ -2070,7 +2070,7 @@ export default function Scene01() {
         className="paper-instruction"
         initial={{ opacity: 0 }}
         animate={{ opacity: showPaper && !paperBurned ? 1 : 0 }}
-        transition={{ delay: showPaper ? 4.5 : 0, duration: 2 }}
+        transition={{ delay: showPaper ? 10.5 : 0, duration: 1.2 }}
       >
         {!nameLocked && (
           <>
