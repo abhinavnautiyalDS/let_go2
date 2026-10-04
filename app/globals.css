@@ -837,6 +837,17 @@ body {
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
+.paper-guidance-note {
+  max-width: min(76vw, 460px);
+  margin: 10px auto 14px;
+  color: rgba(255, 244, 220, 0.68);
+  font-size: 0.76em;
+  line-height: 1.45;
+  letter-spacing: 0.015em;
+  white-space: normal;
+  text-wrap: balance;
+}
+
 .name-input {
   display: block;
   width: min(70vw, 420px);
