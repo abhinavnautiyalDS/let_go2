@@ -249,6 +249,7 @@ const SOURCE_H = 180;
 
 export default function Scene01() {
   // ─── FLOW STATE ────────────────────────────────────────────────────
+  const [roomEntered, setRoomEntered] = useState(false);
   const [guideDismissed, setGuideDismissed] = useState(false);
   const [started, setStarted] = useState(false);
   const [introFinished, setIntroFinished] = useState(false);
@@ -599,7 +600,7 @@ export default function Scene01() {
           viewportWidth / 1672,
           viewportHeight / 941
         );
-        const ritualZoom = started ? 1.12 : 1;
+        const ritualZoom = roomEntered || started ? 1.12 : 1;
         setCameraTarget({
           scale: coverScale * ritualZoom,
           x: 0,
@@ -607,13 +608,13 @@ export default function Scene01() {
         });
       } else if (isTablet) {
         setCameraTarget(
-          started
+          roomEntered || started
             ? { scale: 1.6, x: -90, y: -240 }
             : { scale: 1.15, x: -25, y: -140 }
         );
       } else {
         setCameraTarget(
-          started
+          roomEntered || started
             ? { scale: 1.75, x: -120, y: -280 }
             : { scale: 1.25, x: -35, y: -170 }
         );
@@ -629,7 +630,7 @@ export default function Scene01() {
       window.removeEventListener("orientationchange", updateCamera);
       window.visualViewport?.removeEventListener("resize", updateCamera);
     };
-  }, [started]);
+  }, [started, roomEntered]);
 
   // ─── LAMP FLICKER ──────────────────────────────────────────────────
 
@@ -1865,21 +1866,61 @@ export default function Scene01() {
         </motion.div>
       </motion.div>
 
-      {/* ─── IMMERSION GUIDE ────────────────────────────────────────── */}
+      {/* ─── ROOM ARRIVAL: LET THE USER FEEL THE ENVIRONMENT ──────── */}
       <AnimatePresence>
-        {!guideDismissed && !started && (
+        {!roomEntered && !started && (
+          <motion.div
+            className="immersion-guide room-arrival"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.25, ease: "easeInOut" }}
+          >
+            <motion.div
+              className="immersion-guide-content"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.4, delay: 0.5, ease: "easeOut" }}
+            >
+              <p className="guide-eyebrow">A MOMENT FOR YOURSELF</p>
+              <h2 className="guide-title">ARRIVE</h2>
+              <div className="guide-divider" />
+              <p className="arrival-copy">
+                A quiet room. The sound of rain. Nothing you need to do just yet.
+              </p>
+              <p className="arrival-copy arrival-copy-secondary">
+                Take a moment to settle in. When you're ready, step inside.
+              </p>
+              <button
+                className="intro-step-button"
+                onClick={() => {
+                  setRoomEntered(true);
+                  playOnce(clickAudio.current, 0.15);
+                }}
+              >
+                ENTER THE ROOM
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── IMMERSION GUIDE: SHOW ONLY AFTER ARRIVAL ─────────────── */}
+      <AnimatePresence>
+        {roomEntered && !guideDismissed && !started && (
           <motion.div
             className="immersion-guide"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-            onPointerDown={() => {
-              setGuideDismissed(true);
-              playOnce(clickAudio.current, 0.15);
-            }}
+            transition={{ duration: 1.25, ease: "easeOut" }}
           >
-            <div className="immersion-guide-content">
+            <motion.div
+              className="immersion-guide-content"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.1, delay: 0.25, ease: "easeOut" }}
+            >
               <p className="guide-eyebrow">BEFORE YOU BEGIN</p>
               <h2 className="guide-title">IMMERSE YOURSELF</h2>
               <div className="guide-divider" />
@@ -1894,48 +1935,52 @@ export default function Scene01() {
                   </span>
                   <span>Use headphones for a richer, more intimate experience.</span>
                 </li>
-
                 <li className="guide-item">
                   <span className="guide-icon">
                     <svg viewBox="0 0 24 24" width="20" height="20">
                       <path d="M12 2v4M12 22v-4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M22 12h-4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                     </svg>
                   </span>
-                  <span>Follow the text as it appears — let it guide your focus.</span>
+                  <span>Follow the words gently. There is no need to rush.</span>
                 </li>
-
                 <li className="guide-item">
                   <span className="guide-icon">
                     <svg viewBox="0 0 24 24" width="20" height="20">
                       <path d="M2 10v4M6 6v12M10 8v8M14 4v16M18 6v12M22 10v4" />
                     </svg>
                   </span>
-                  <span>Attune to the surrounding audio scene. Let it hold you.</span>
+                  <span>Let the rain and room sounds create a quiet space for you.</span>
                 </li>
-
                 <li className="guide-item">
                   <span className="guide-icon">
                     <svg viewBox="0 0 24 24" width="20" height="20">
                       <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
                     </svg>
                   </span>
-                  <span>Bring your emotions exactly as they are.</span>
+                  <span>Bring your feelings as they are. You don't have to change them.</span>
                 </li>
-
                 <li className="guide-item">
                   <span className="guide-icon">
                     <svg viewBox="0 0 24 24" width="20" height="20">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 7v5l3 2" />
                     </svg>
                   </span>
-                  <span>There is no rush. Take your time.</span>
+                  <span>Take your time. This moment belongs to you.</span>
                 </li>
               </ul>
 
-              <p className="guide-all-the-best">All the best.</p>
-              <p className="guide-dismiss">(tap anywhere to continue)</p>
-            </div>
+              <p className="guide-all-the-best">Whenever you're ready.</p>
+              <button
+                className="intro-step-button"
+                onClick={() => {
+                  setGuideDismissed(true);
+                  playOnce(clickAudio.current, 0.15);
+                }}
+              >
+                CONTINUE
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
