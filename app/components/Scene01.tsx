@@ -15,7 +15,7 @@ const staticLayers = [
   "LAMP.png",
 ];
 
-const rainDrops = Array.from({ length: 200 }, (_, i) => ({
+const rainDrops = Array.from({ length: 300 }, (_, i) => ({
   left: (i * 11.73) % 85,
   top: (i * 17.41) % 100,
   delay: (i * 0.37) % 4,
@@ -1429,6 +1429,8 @@ export default function Scene01() {
     const playBreath = () => {
       if (cancelled) return;
       if (phaseIndex >= phases.length) {
+        // End the storm just after the final exhale, before the release pause.
+        stopAudio(rainAudio.current, 1200);
         setBreathPhase(null);
         setPostBurnStage("breathPause");
         return;
@@ -1762,7 +1764,7 @@ export default function Scene01() {
             animate={{ opacity: postBurnStage === "release" || postBurnStage === "affirmation" || postBurnStage === "memory" || postBurnStage === "checkout" || postBurnStage === "card" || postBurnStage === "donation" || postBurnStage === "final" ? 0 : 1 }}
             transition={{ duration: 2, ease: "easeInOut" }}
           >
-            {rainDrops.slice(0, performanceTier === "low" ? 55 : performanceTier === "balanced" ? 120 : rainDrops.length).map((drop, i) => (
+            {rainDrops.slice(0, performanceTier === "low" ? 90 : performanceTier === "balanced" ? 220 : rainDrops.length).map((drop, i) => (
               <span
                 key={i}
                 className="raindrop"
