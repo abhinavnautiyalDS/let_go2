@@ -692,7 +692,9 @@ export default function Scene01() {
   useEffect(() => {
     if (!nameLocked) return;
     fadeAudio(roomAudio.current, 0.05, 400);
-    const timer = trackedTimeout(() => setBurning(true), 550);
+    // Let the handwritten name finish appearing before the fire starts.
+    // This gives the user a clear moment to see it on the paper.
+    const timer = trackedTimeout(() => setBurning(true), 1650);
     return () => window.clearTimeout(timer);
   }, [nameLocked]);
 
@@ -708,7 +710,8 @@ export default function Scene01() {
       fire.loop = true;
       fire.volume = 0;
       fire.play().catch(() => {});
-      fadeAudio(fire, 0.4, 1200);
+      // Bring the fire forward in the mix so the burn feels more present.
+      fadeAudio(fire, 0.52, 1000);
     }
     fadeAudio(rainAudio.current, 0.05, 1800);
     fadeAudio(roomAudio.current, 0.03, 1800);
@@ -1087,7 +1090,9 @@ export default function Scene01() {
         const changed = smoothstep(18, 70, diff);
         const smokeLike = changed * smoothstep(35, 180, luminance) * (1 - smoothstep(0.28, 0.62, saturation));
         const effect = Math.max(changed, brightWarm * 0.95, motion * 0.75, smokeLike * 0.65);
-        const alpha = Math.round(Math.max(0, Math.min(1, effect)) * sourceAlpha * 255);
+        // Slightly strengthen the flame layer while keeping its highlights
+        // bounded, so the paper's burn edge remains visible.
+        const alpha = Math.round(Math.max(0, Math.min(1, effect * 1.22)) * sourceAlpha * 255);
 
         const spill = Math.max(0, g - Math.max(r, b));
         const cleanG = Math.round(g - spill * 0.42);
@@ -2067,6 +2072,9 @@ export default function Scene01() {
         {!nameLocked && (
           <>
             <p>Write the name you're ready to let go of.</p>
+            <p className="paper-guidance-note">
+              If it feels right, place what you're carrying here. You don't have to force anything.
+            </p>
             <input
               className="name-input"
               type="text"
