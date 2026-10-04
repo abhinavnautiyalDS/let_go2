@@ -674,13 +674,13 @@ export default function Scene01() {
     const rain = rainAudio.current;
     if (!rain) return;
     rain.loop = true;
-    rain.volume = 0.16;
+    rain.volume = 0.28;
     rain.play().catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!started) return;
-    fadeAudio(rainAudio.current, 0.14, 3000);
+    fadeAudio(rainAudio.current, 0.24, 3000);
     playLoop(roomAudio.current, 0.14);
   }, [started]);
 
@@ -713,7 +713,7 @@ export default function Scene01() {
       // Bring the fire forward in the mix so the burn feels more present.
       fadeAudio(fire, 0.52, 1000);
     }
-    fadeAudio(rainAudio.current, 0.05, 1800);
+    fadeAudio(rainAudio.current, 0.09, 1800);
     fadeAudio(roomAudio.current, 0.03, 1800);
   }, [burning]);
 
