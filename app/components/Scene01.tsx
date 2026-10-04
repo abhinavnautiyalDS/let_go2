@@ -545,7 +545,11 @@ export default function Scene01() {
         await element.requestFullscreen();
       }
 
-      const orientation = screen.orientation;
+      // Some TypeScript DOM library versions omit the Screen Orientation
+      // lock() method even though supporting browsers expose it at runtime.
+      const orientation = screen.orientation as ScreenOrientation & {
+        lock?: (value: "landscape") => Promise<void>;
+      };
       if (!orientation?.lock) {
         throw new Error("Screen orientation lock is not supported");
       }
