@@ -899,7 +899,7 @@ body {
   transform-origin: 0 0;
   transform: matrix3d(0.780727083, 0.1324259999, 0, 0.000208328444, 0.0654983341, 0.1738967323, 0, -0.000314534332, 0, 0, 1, 0, 334.191075, 613.150004, 0, 1);
   backface-visibility: hidden;
-  transition: opacity 20s ease-out;
+  transition: opacity 180ms ease-out;
   will-change: opacity;
 }
 
