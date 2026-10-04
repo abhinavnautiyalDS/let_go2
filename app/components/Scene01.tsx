@@ -1401,9 +1401,12 @@ export default function Scene01() {
 
   useEffect(() => {
     if (postBurnStage !== "silence") return;
+    // Let the camera finish its slow pullback before asking the user to breathe.
+    // The 750ms fade/hold above + this silence + the 900ms breathing lead-in
+    // gives the wide room reveal time to settle without adding another overlay.
     const timer = trackedTimeout(() => {
       setPostBurnStage("breathing");
-    }, 1100);
+    }, 3400);
     return () => window.clearTimeout(timer);
   }, [postBurnStage]);
 
@@ -1475,8 +1478,10 @@ export default function Scene01() {
     const rayInterval = trackedInterval(() => {
       rayStep++;
       const t = smoothstep(0, 1, rayStep / totalSteps);
-      setReleaseRaysOpacity(Math.min(0.17, t * 0.17));
-      setDustOpacity(Math.min(0.5, t * 0.1));
+      // Keep the release visible only when the light catches it; avoid a
+      // sudden, fantasy-like transformation of the room.
+      setReleaseRaysOpacity(Math.min(0.14, t * 0.14));
+      setDustOpacity(Math.min(0.5, t * 0.07));
       if (rayStep >= totalSteps) {
         clearTrackedInterval(rayInterval);
 
@@ -1815,7 +1820,7 @@ export default function Scene01() {
             <motion.div
               className="room-warmth-overlay"
               initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.15, 0.12, 0.18, 0.14] }}
+              animate={{ opacity: [0, 0.12, 0.1, 0.13, 0.11] }}
               transition={{ duration: 12, ease: "easeOut" }}
             />
           )}
@@ -1825,7 +1830,7 @@ export default function Scene01() {
               <motion.div
                 className="window-daylight"
                 initial={{ opacity: 0, scale: 0.82 }}
-                animate={{ opacity: [0.85, 0.78, 0.85], scale: [1, 1.008, 1] }}
+                animate={{ opacity: [0.46, 0.42, 0.46], scale: [1, 1.006, 1] }}
                 transition={{
                   duration: 8,
                   delay: 1.5,
@@ -1837,7 +1842,7 @@ export default function Scene01() {
               <motion.div
                 className="sun-rays"
                 initial={{ opacity: 0, x: -18 }}
-                animate={{ opacity: [0.85, 0.78, 0.85], x: 0 }}
+                animate={{ opacity: [0.42, 0.38, 0.42], x: 0 }}
                 transition={{
                   opacity: { duration: 8, delay: 0.7, repeat: Infinity, ease: "easeInOut" },
                   x: { duration: 8, delay: 0.7, ease: "easeOut" },
@@ -1851,7 +1856,7 @@ export default function Scene01() {
               <motion.div
                 className="sunlight-patch"
                 initial={{ opacity: 0, scale: 0.72, x: -20 }}
-                animate={{ opacity: [0.38, 0.34, 0.38], scale: [1, 1.006, 1] }}
+                animate={{ opacity: [0.22, 0.19, 0.22], scale: [1, 1.004, 1] }}
                 transition={{
                   duration: 8,
                   delay: 2.2,
