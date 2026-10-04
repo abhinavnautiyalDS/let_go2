@@ -604,7 +604,7 @@ export default function Scene01() {
           viewportWidth / 1672,
           viewportHeight / 941
         );
-        const ritualZoom = roomEntered || started ? 1.12 : 1;
+        const ritualZoom = started ? 1.12 : 1;
         setCameraTarget({
           scale: coverScale * ritualZoom,
           x: 0,
@@ -612,13 +612,13 @@ export default function Scene01() {
         });
       } else if (isTablet) {
         setCameraTarget(
-          roomEntered || started
+          started
             ? { scale: 1.6, x: -90, y: -240 }
             : { scale: 1.15, x: -25, y: -140 }
         );
       } else {
         setCameraTarget(
-          roomEntered || started
+          started
             ? { scale: 1.75, x: -120, y: -280 }
             : { scale: 1.25, x: -35, y: -170 }
         );
@@ -1899,6 +1899,14 @@ export default function Scene01() {
                 className="intro-step-button"
                 onClick={() => {
                   setRoomEntered(true);
+                  // Start/resume rain from this user gesture so browsers that
+                  // block autoplay still establish the room ambience before Begin.
+                  const rain = rainAudio.current;
+                  if (rain) {
+                    rain.loop = true;
+                    rain.volume = 0.16;
+                    rain.play().catch(() => {});
+                  }
                   playOnce(clickAudio.current, 0.15);
                 }}
               >
