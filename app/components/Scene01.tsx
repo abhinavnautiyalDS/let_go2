@@ -585,9 +585,9 @@ export default function Scene01() {
   // ─── RESPONSIVE CAMERA ──────────────────────────────────────────────
 
   const [cameraTarget, setCameraTarget] = useState({
-    scale: 1.25,
-    x: -35,
-    y: -170,
+    scale: 1,
+    x: 0,
+    y: 0,
   });
 
   useEffect(() => {
@@ -620,7 +620,7 @@ export default function Scene01() {
         setCameraTarget(
           started
             ? { scale: 1.75, x: -120, y: -280 }
-            : { scale: 1.25, x: -35, y: -170 }
+            : { scale: 1, x: 0, y: 0 }
         );
       }
     };
