@@ -1390,7 +1390,8 @@ export default function Scene01() {
     if (!paperBurned || postBurnStage !== "idle") return;
 
     stopAudio(fireAudio.current, 700);
-    stopAudio(rainAudio.current, 700);
+    // Keep the rain present through the wide-room reveal and breathing ritual.
+    // It will fade out as the release light begins.
     stopAudio(roomAudio.current, 700);
 
     const timer = trackedTimeout(() => {
@@ -1401,12 +1402,11 @@ export default function Scene01() {
 
   useEffect(() => {
     if (postBurnStage !== "silence") return;
-    // Let the camera finish its slow pullback before asking the user to breathe.
-    // The 750ms fade/hold above + this silence + the 900ms breathing lead-in
-    // gives the wide room reveal time to settle without adding another overlay.
+    // The camera pullback takes 8 seconds. Hold the quiet long enough for it
+    // to settle before the first inhale/exhale cue appears.
     const timer = trackedTimeout(() => {
       setPostBurnStage("breathing");
-    }, 3400);
+    }, 5700);
     return () => window.clearTimeout(timer);
   }, [postBurnStage]);
 
@@ -1451,6 +1451,8 @@ export default function Scene01() {
   useEffect(() => {
     if (postBurnStage !== "release") return;
 
+    // Stop the rain as the release rays begin, after both breathing cues finish.
+    stopAudio(rainAudio.current, 1800);
     setWorldChanged(true);
 
     const windTimer = trackedTimeout(() => {
@@ -1478,10 +1480,10 @@ export default function Scene01() {
     const rayInterval = trackedInterval(() => {
       rayStep++;
       const t = smoothstep(0, 1, rayStep / totalSteps);
-      // Keep the release visible only when the light catches it; avoid a
-      // sudden, fantasy-like transformation of the room.
-      setReleaseRaysOpacity(Math.min(0.14, t * 0.14));
-      setDustOpacity(Math.min(0.5, t * 0.07));
+      // Ramp the rays in gently, then hold their final intensity steady.
+      // Once t reaches 1, this remains exactly 0.14 for the rest of the scene.
+      setReleaseRaysOpacity(0.14 * t);
+      setDustOpacity(0.07 * t);
       if (rayStep >= totalSteps) {
         clearTrackedInterval(rayInterval);
 
