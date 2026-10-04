@@ -912,6 +912,9 @@ export default function Scene01() {
           alpha[i] = imageData.data[i * 4 + 3];
         }
         lowResPaperAlpha.current = alpha;
+        // The compositor caches its paper layer. Mark it dirty so the newly
+        // written name is included in the very first burn frame.
+        burnMaskDirty.current = true;
 
         if (lowResCompositeCanvas.current) {
           const compCtx = lowResCompositeCanvas.current.getContext("2d");
@@ -1678,7 +1681,7 @@ export default function Scene01() {
 
           <canvas
             ref={nameOverlayCanvasRef}
-            className="name-overlay-canvas"
+            className={`name-overlay-canvas${nameLocked && !burning ? " name-overlay-canvas--visible" : ""}`}
             aria-hidden="true"
           />
 
