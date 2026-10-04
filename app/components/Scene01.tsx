@@ -1626,7 +1626,12 @@ export default function Scene01() {
         className={`scene-camera${sceneAssetsReady ? " scene-camera--ready" : ""}`}
         initial={{ scale: 1, x: 0, y: 0 }}
         animate={{ scale: cameraTarget.scale, x: cameraTarget.x, y: cameraTarget.y }}
-        transition={{ duration: started ? 5 : 12, ease: [0.22, 1, 0.36, 1] }}
+        transition={{
+          // Slow, even camera movement: a deliberate push-in for the ritual,
+          // then a longer pullback after the burn. Ease in and out to avoid a snap.
+          duration: started ? (paperBurned ? 8 : 8.5) : 12,
+          ease: [0.45, 0, 0.55, 1],
+        }}
       >
         <motion.div
           className="breath-scale-wrapper"
