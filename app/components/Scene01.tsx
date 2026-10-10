@@ -409,6 +409,8 @@ export default function Scene01() {
   const [showCard, setShowCard] = useState(false);
   const [showDonation, setShowDonation] = useState(false);
   const [showFinalExit, setShowFinalExit] = useState(false);
+  const [paymentBusy, setPaymentBusy] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState("");
 
   // ─── REFS ──────────────────────────────────────────────────────────
 
@@ -1560,11 +1562,99 @@ export default function Scene01() {
     setPostBurnStage("final");
   };
 
-  const handleCardPayment = () => {
-    setShowCardCheckout(false);
-    setShowCard(true);
-    setPostBurnStage("card");
+  const startHostedCheckout = async (product: "card" | "donation", tier?: "small" | "medium" | "large") => {
+    if (paymentBusy) return;
+    setPaymentBusy(true);
+    setPaymentMessage("");
+    try {
+      sessionStorage.setItem("letgo_payment_product", product);
+      sessionStorage.setItem("letgo_ritual_name", name);
+      const response = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product, ...(tier ? { tier } : {}) }),
+      });
+      const data = await response.json() as { url?: string; error?: string };
+      if (!response.ok || !data.url) {
+        setPaymentMessage(data.error || "Payments are not available right now. Please try again later.");
+        setPaymentBusy(false);
+        return;
+      }
+      window.location.assign(data.url);
+    } catch {
+      setPaymentMessage("Couldn't open secure checkout. Please check your connection and try again.");
+      setPaymentBusy(false);
+    }
   };
+
+  const handleCardPayment = () => startHostedCheckout("card");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment_cancelled") === "1") {
+      setPaymentMessage("Payment cancelled. Nothing was charged by LET GO. You can try again whenever you like.");
+      params.delete("payment_cancelled");
+      window.history.replaceState({}, "", `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`);
+      return;
+    }
+
+    const provider = params.get("payment_return");
+    if (provider !== "stripe" && provider !== "razorpay") return;
+    const product = params.get("product");
+    const sessionId = params.get("session_id");
+    const paymentLinkId = params.get("razorpay_payment_link_id");
+    if ((provider === "stripe" && !sessionId) || (provider === "razorpay" && !paymentLinkId) || (product !== "card" && product !== "donation")) {
+      setPaymentMessage("We couldn't verify that payment yet. Please contact support before paying again.");
+      return;
+    }
+
+    let cancelled = false;
+    const verify = async () => {
+      try {
+        const response = await fetch("/api/payments/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider,
+            product,
+            ...(sessionId ? { sessionId } : {}),
+            ...(paymentLinkId ? { paymentLinkId } : {}),
+          }),
+        });
+        const data = await response.json() as { paid?: boolean };
+        if (cancelled) return;
+        if (!response.ok || !data.paid) {
+          setPaymentMessage("We couldn't confirm the payment. Please don't pay again yet; check your payment receipt or contact support.");
+          return;
+        }
+        params.delete("payment_return");
+        params.delete("product");
+        params.delete("session_id");
+        params.delete("razorpay_payment_link_id");
+        params.delete("razorpay_payment_link_reference_id");
+        params.delete("razorpay_payment_link_status");
+        window.history.replaceState({}, "", `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`);
+        if (product === "card") {
+          const savedName = sessionStorage.getItem("letgo_ritual_name") || "";
+          setName(savedName);
+          setShowCardCheckout(false);
+          setShowCard(true);
+          setPostBurnStage("card");
+        } else {
+          setPaymentMessage("Thank you for supporting LET GO. Your contribution means a lot.");
+          setShowDonation(false);
+          setShowFinalExit(true);
+          setPostBurnStage("final");
+        }
+        sessionStorage.removeItem("letgo_payment_product");
+        sessionStorage.removeItem("letgo_ritual_name");
+      } catch {
+        if (!cancelled) setPaymentMessage("We couldn't verify the payment because of a connection issue. Please check your receipt before trying again.");
+      }
+    };
+    void verify();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleSaveCard = () => {
     window.print();
@@ -2282,9 +2372,10 @@ export default function Scene01() {
                 and the date you chose to let go.
               </p>
               <div className="card-price">₹5</div>
-              <button className="card-payment-button" onClick={() => { handleCardPayment(); playOnce(clickAudio.current, 0.2); }}>
-                CREATE MY CARD — ₹5
+              <button className="card-payment-button" disabled={paymentBusy} onClick={() => { handleCardPayment(); playOnce(clickAudio.current, 0.2); }}>
+                {paymentBusy ? "OPENING SECURE CHECKOUT…" : "CREATE MY CARD — ₹5 / $1"}
               </button>
+              {paymentMessage && <p className="payment-status" role="status">{paymentMessage}</p>}
               <button className="card-payment-later" onClick={() => { skipMemoryCard(); playOnce(clickAudio.current, 0.2); }}>
                 NOT NOW
               </button>
@@ -2427,9 +2518,18 @@ export default function Scene01() {
             <span className="donation-eyebrow">KEEP LET GO ALIVE</span>
             <p className="donation-title">If this moment helped you breathe a little easier, you can help keep LET GO here for someone else.</p>
             <p className="donation-note">Completely optional. The experience remains yours either way.</p>
-            <button className="donation-primary-button" onClick={() => { setShowDonation(false); setShowFinalExit(true); setPostBurnStage("final"); playOnce(clickAudio.current, 0.2); }}>
-              SUPPORT LET GO
-            </button>
+            <div className="donation-options">
+              <button className="donation-primary-button" disabled={paymentBusy} onClick={() => { void startHostedCheckout("donation", "small"); playOnce(clickAudio.current, 0.2); }}>
+                {paymentBusy ? "OPENING CHECKOUT…" : "SUPPORT ₹99 / $3"}
+              </button>
+              <button className="donation-primary-button" disabled={paymentBusy} onClick={() => { void startHostedCheckout("donation", "medium"); playOnce(clickAudio.current, 0.2); }}>
+                SUPPORT ₹199 / $5
+              </button>
+              <button className="donation-primary-button" disabled={paymentBusy} onClick={() => { void startHostedCheckout("donation", "large"); playOnce(clickAudio.current, 0.2); }}>
+                SUPPORT ₹499 / $10
+              </button>
+            </div>
+            {paymentMessage && <p className="payment-status" role="status">{paymentMessage}</p>}
             <button className="donation-secondary-button" onClick={() => { setShowDonation(false); setShowFinalExit(true); setPostBurnStage("final"); playOnce(clickAudio.current, 0.2); }}>
               NOT NOW
             </button>
