@@ -2566,3 +2566,38 @@ body {
     margin-bottom: 12px;
   }
 }
+
+
+/* Hosted checkout status and donation tiers */
+.donation-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+  margin: 18px 0 8px;
+}
+
+.donation-options .donation-primary-button {
+  width: 100%;
+}
+
+.payment-status {
+  margin: 12px auto;
+  max-width: 34rem;
+  color: rgba(244, 231, 211, 0.92);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.card-payment-button:disabled,
+.donation-primary-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (min-width: 620px) {
+  .donation-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
