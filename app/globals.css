@@ -885,26 +885,26 @@ body {
   visibility: hidden;
 }
 
-.name-overlay-canvas {
+.name-overlay-svg {
   position: absolute;
   left: 0;
   top: 0;
   width: 1280px;
   height: 720px;
+  display: block;
+  overflow: visible;
   pointer-events: none;
   user-select: none;
-  z-index: 511; 
-  display: block;
-  opacity: 0;
+  z-index: 511;
   transform-origin: 0 0;
   transform: matrix3d(0.780727083, 0.1324259999, 0, 0.000208328444, 0.0654983341, 0.1738967323, 0, -0.000314534332, 0, 0, 1, 0, 334.191075, 613.150004, 0, 1);
   backface-visibility: hidden;
-  transition: opacity 180ms ease-out;
-  will-change: opacity;
+  animation: paper-name-appear 180ms ease-out both;
 }
 
-.name-overlay-canvas--visible {
-  opacity: 1 !important;
+@keyframes paper-name-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* =========================================================
