@@ -419,6 +419,7 @@ export default function Scene01() {
 
   const cardContentRef = useRef<HTMLDivElement | null>(null);
   const [cardNameFontSize, setCardNameFontSize] = useState(56);
+  const [paperNameLayout, setPaperNameLayout] = useState<{ lines: string[]; fontSize: number; lineHeight: number; x: number; y: number; w: number; h: number } | null>(null);
 
   const rainAudio = useRef<HTMLAudioElement | null>(null);
   const roomAudio = useRef<HTMLAudioElement | null>(null);
@@ -941,6 +942,7 @@ export default function Scene01() {
       const cx = W * (bounds.x + bounds.w / 2);
       const cy = H * (bounds.y + bounds.h / 2);
       const fitted = fitNameMultiline(fctx, name, maxW, maxH, 90, fontFamily, maxLines);
+      setPaperNameLayout({ lines: fitted.lines, fontSize: fitted.fontSize, lineHeight: fitted.lineHeight, x: bounds.x, y: bounds.y, w: bounds.w, h: bounds.h });
 
       fctx.save();
       fctx.fillStyle = color;
@@ -1691,11 +1693,24 @@ export default function Scene01() {
             aria-hidden="true"
           />
 
-          <canvas
-            ref={nameOverlayCanvasRef}
-            className={`name-overlay-canvas${nameLocked && !burning ? " name-overlay-canvas--visible" : ""}`}
-            aria-hidden="true"
-          />
+          {nameLocked && !burning && paperNameLayout && (
+            <svg className="name-overlay-svg" viewBox="0 0 1280 720" preserveAspectRatio="none" aria-label={`Name written on the paper: ${name}`} role="img">
+              <text
+                x={(paperNameLayout.x + paperNameLayout.w / 2) * 1280}
+                y={(paperNameLayout.y + paperNameLayout.h / 2) * 720 - ((paperNameLayout.lines.length - 1) * paperNameLayout.lineHeight) / 2}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily="Segoe Print, Bradley Hand, cursive"
+                fontSize={paperNameLayout.fontSize}
+                fontWeight="400"
+                fill="rgba(20,17,15,0.94)"
+              >
+                {paperNameLayout.lines.map((line, index) => (
+                  <tspan key={`${index}-${line}`} x={(paperNameLayout.x + paperNameLayout.w / 2) * 1280} dy={index === 0 ? 0 : paperNameLayout.lineHeight}>{line}</tspan>
+                ))}
+              </text>
+            </svg>
+          )}
 
           <canvas
             ref={ashCanvasRef}
