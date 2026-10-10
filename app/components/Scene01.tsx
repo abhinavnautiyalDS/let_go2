@@ -956,8 +956,18 @@ export default function Scene01() {
 
     const overlay = nameOverlayCanvasRef.current;
     if (overlay) {
+      // Set intrinsic dimensions before drawing. Resizing a canvas clears its
+      // bitmap, so do this before the wipe animation starts.
       overlay.width = W;
       overlay.height = H;
+    }
+    // Draw the full name immediately as a reliable fallback, then run the
+    // handwritten reveal over it. If the animation is interrupted by a state
+    // change, the name remains visible instead of disappearing completely.
+    const overlayCtx = overlay?.getContext("2d");
+    if (overlayCtx && nameFullCanvasRef.current) {
+      overlayCtx.clearRect(0, 0, W, H);
+      overlayCtx.drawImage(nameFullCanvasRef.current, 0, 0);
     }
     animateNameWipe(NAME_WIPE_DURATION_MS);
   }, [nameLocked, name, paperReady]);
