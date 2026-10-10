@@ -974,6 +974,26 @@ export default function Scene01() {
     animateNameWipe(NAME_WIPE_DURATION_MS);
   }, [nameLocked, name, paperReady]);
 
+  // Fit the keepsake name to the actual card content width. Thirty-character
+  // names can wrap to two lines and shrink automatically rather than overflow.
+  useEffect(() => {
+    if (postBurnStage !== "card" || !name) return;
+    const fitCardName = () => {
+      const content = cardContentRef.current;
+      if (!content) return;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const fontFamily = '"Segoe Print", "Bradley Hand", cursive';
+      const maxWidth = Math.max(120, content.clientWidth * 0.9);
+      const fitted = fitNameMultiline(ctx, name, maxWidth, 94, 56, fontFamily, 2);
+      setCardNameFontSize(fitted.fontSize);
+    };
+    fitCardName();
+    window.addEventListener("resize", fitCardName);
+    return () => window.removeEventListener("resize", fitCardName);
+  }, [name, postBurnStage]);
+
   // ─── COMPOSITOR ─────────────────────────────────────────────────────
 
   const initCompositor = () => {
@@ -2110,7 +2130,7 @@ export default function Scene01() {
               type="text"
               placeholder="write their name..."
               autoComplete="off"
-              maxLength={70}
+              maxLength={30}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => {
