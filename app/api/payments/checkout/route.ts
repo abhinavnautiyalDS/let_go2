@@ -10,12 +10,12 @@ function jsonError(message: string, status = 400) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as { product?: unknown; amount?: unknown };
+    const body = await request.json() as { product?: unknown; tier?: unknown };
     const product = body.product;
     const country = (request.headers.get("cf-ipcountry") || request.headers.get("x-vercel-ip-country") || "US").toUpperCase();
     const isIndia = country === "IN";
     const isCard = product === "card";
-    const allowedDonationAmounts = isIndia ? [9900, 19900, 49900] : [300, 500, 1000];
+    const donationAmounts: Record<string, number> = isIndia ? { small: 9900, medium: 19900, large: 49900 } : { small: 300, medium: 500, large: 1000 };
 
     let amount: number;
     let currency: string;
@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
       amount = isIndia ? 500 : 100;
       currency = isIndia ? "INR" : "USD";
       description = "LET GO personalized keepsake card";
-    } else if (product === "donation" && typeof body.amount === "number" && allowedDonationAmounts.includes(body.amount)) {
-      amount = body.amount;
+    } else if (product === "donation" && typeof body.tier === "string" && body.tier in donationAmounts) {
+      amount = donationAmounts[body.tier];
       currency = isIndia ? "INR" : "USD";
       description = "Optional support for LET GO";
     } else {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         return jsonError("India payments are not configured yet. Please try again later.", 503);
       }
 
-      const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+      const auth = btoa(`${keyId}:${keySecret}`);
       const response = await fetch("https://api.razorpay.com/v1/payment_links", {
         method: "POST",
         headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" },
