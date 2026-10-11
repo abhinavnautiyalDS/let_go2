@@ -1841,7 +1841,9 @@ export default function Scene01() {
                 src={`${ASSET_BASE}/release/release-rays.png`}
                 className="release-rays"
                 style={{
-                  opacity: releaseRaysOpacity,
+                  // Window light rays should hold the same brightness after
+                  // their entrance ramp, including while affirmations are shown.
+                  opacity: 0.14,
                   position: "absolute",
                   left: 0,
                   top: 0,
