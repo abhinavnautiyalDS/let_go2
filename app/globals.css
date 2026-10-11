@@ -907,6 +907,14 @@ body {
   to { opacity: 1; }
 }
 
+/* During the burn, let the compositor draw the paper/name above this SVG.
+   This keeps the visible fallback from floating over the fire. */
+.name-overlay-svg--burning {
+  z-index: 509;
+  animation: none;
+  opacity: 1;
+}
+
 /* =========================================================
    REAL FIRE / PAPER COMPOSITOR
 ========================================================= */
