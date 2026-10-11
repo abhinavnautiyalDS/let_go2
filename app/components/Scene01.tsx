@@ -1766,7 +1766,9 @@ export default function Scene01() {
           <motion.div
             className="lamp-glow"
             animate={{
-              opacity: flicker ? [0.8, 0.2, 0.8] : (worldChanged ? [0.5, 0.56, 0.5] : [0.48, 0.5, 0.48]),
+              // Keep the room lamp at a constant brightness throughout the
+              // release text and affirmation sequence. Only its scale breathes.
+              opacity: flicker ? [0.8, 0.2, 0.8] : 0.53,
               scale: flicker ? [1.05, 0.95, 1.05] : (worldChanged ? [1.02, 1.03, 1.02] : [1.03, 1.02, 1.03]),
             }}
             transition={{
