@@ -384,6 +384,16 @@ export default function Scene01() {
   const [flicker, setFlicker] = useState(false);
   const [paperReady, setPaperReady] = useState(false);
 
+  // Open /ritual?auraPreview=1 to inspect the post-breath atmosphere without
+  // replaying the ritual. This query flag is inert for ordinary visitors.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("auraPreview") !== "1") return;
+    setWorldChanged(true);
+    setReleaseRaysOpacity(0.14);
+    setDustOpacity(0.07);
+  }, []);
+
   const [breathPhase, setBreathPhase] = useState<"inhale" | "exhale" | null>(null);
   const [showLetGoText, setShowLetGoText] = useState(false);
   const [releaseRaysOpacity, setReleaseRaysOpacity] = useState(0);
