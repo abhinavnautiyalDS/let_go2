@@ -1713,8 +1713,8 @@ export default function Scene01() {
             aria-hidden="true"
           />
 
-          {nameLocked && !burning && paperNameLayout && (
-            <svg className="name-overlay-svg" viewBox="0 0 1280 720" preserveAspectRatio="none" aria-label={`Name written on the paper: ${name}`} role="img">
+          {nameLocked && !paperBurned && paperNameLayout && (
+            <svg className={`name-overlay-svg${burning ? " name-overlay-svg--burning" : ""}`} viewBox="0 0 1280 720" preserveAspectRatio="none" aria-label={`Name written on the paper: ${name}`} role="img">
               <text
                 x={(paperNameLayout.x + paperNameLayout.w / 2) * 1280}
                 y={(paperNameLayout.y + paperNameLayout.h / 2) * 720 - ((paperNameLayout.lines.length - 1) * paperNameLayout.lineHeight) / 2}
