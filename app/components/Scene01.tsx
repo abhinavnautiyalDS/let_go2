@@ -1674,58 +1674,41 @@ export default function Scene01() {
           }
           transition={{ duration: 4, ease: "easeInOut" }}
         >
+          {/* Warmth arrives only after the final inhale/exhale and the world-change cue.
+              This light sits behind the unchanged person; it never alters the source artwork. */}
+          <motion.div
+            className="positive-aura"
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              zIndex: 0,
+              mixBlendMode: "screen",
+              background:
+                "radial-gradient(ellipse 20% 32% at 50% 55%, rgba(255, 190, 98, 0.26) 0%, rgba(255, 174, 84, 0.12) 38%, rgba(255, 170, 80, 0.035) 64%, transparent 100%), radial-gradient(ellipse 40% 46% at 50% 58%, rgba(255, 181, 96, 0.07) 0%, transparent 74%)",
+            }}
+            initial={false}
+            animate={{
+              opacity: worldChanged ? [0, 0.72, 0.9, 0.82] : 0,
+              scale: worldChanged ? [0.98, 1.02, 1.06, 1.04] : 0.98,
+            }}
+            transition={{
+              duration: 8,
+              ease: "easeInOut",
+              times: [0, 0.42, 0.78, 1],
+            }}
+          />
+
           <motion.img
             src={`${ASSET_BASE}/PERSON.png`}
             className="layer person-breathing"
             alt=""
             loading="eager"
             decoding="async"
-            animate={
-              postBurnStage === "affirmation" ||
-              postBurnStage === "memory" ||
-              postBurnStage === "checkout" ||
-              postBurnStage === "card" ||
-              postBurnStage === "donation" ||
-              postBurnStage === "final"
-                ? {
-                    // A quiet release: gently lift the head/torso silhouette,
-                    // open the posture a touch, and keep breathing throughout.
-                    y: [0, -2, -3],
-                    x: [0, 1, 1],
-                    rotate: [0, -0.12, -0.12],
-                    scaleX: [1, 1.004, 1.004],
-                    scaleY: [1, 1.004, 1.004],
-                  }
-                : { y: 0, x: 0, rotate: 0, scaleX: 1, scaleY: [1, 1.007, 1] }
-            }
-            transition={
-              postBurnStage === "affirmation" ||
-              postBurnStage === "memory" ||
-              postBurnStage === "checkout" ||
-              postBurnStage === "card" ||
-              postBurnStage === "donation" ||
-              postBurnStage === "final"
-                ? {
-                    y: { duration: 5.5, ease: "easeInOut" },
-                    x: { duration: 5.5, ease: "easeInOut" },
-                    rotate: { duration: 5.5, ease: "easeInOut" },
-                    scaleX: { duration: 5.5, ease: "easeInOut" },
-                    scaleY: { duration: 5.5, ease: "easeInOut" },
-                  }
-                : { duration: 4.5, repeat: Infinity, ease: "easeInOut" }
-            }
-            style={{
-              transformOrigin: "50% 58%",
-              filter:
-                postBurnStage === "affirmation" ||
-                postBurnStage === "memory" ||
-                postBurnStage === "checkout" ||
-                postBurnStage === "card" ||
-                postBurnStage === "donation" ||
-                postBurnStage === "final"
-                  ? "drop-shadow(0 0 18px rgba(255, 196, 112, 0.13))"
-                  : "none",
-            }}
+            animate={{ y: 0, x: 0, rotate: 0, scaleX: 1, scaleY: [1, 1.004, 1] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+            style={{ transformOrigin: "50% 58%" }}
           />
 
           {staticLayers.map((layer) => (
