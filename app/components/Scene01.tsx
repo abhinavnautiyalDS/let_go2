@@ -1674,50 +1674,58 @@ export default function Scene01() {
           }
           transition={{ duration: 4, ease: "easeInOut" }}
         >
-          {/* Warm silhouette light: the PNG stays still; only its light changes. */}
-          <motion.img
-            src={`${ASSET_BASE}/PERSON.png`}
-            className="layer person-release-light"
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            decoding="async"
-            animate={{
-              opacity:
-                postBurnStage === "release" ||
-                postBurnStage === "affirmation" ||
-                postBurnStage === "memory" ||
-                postBurnStage === "checkout" ||
-                postBurnStage === "card" ||
-                postBurnStage === "donation" ||
-                postBurnStage === "final"
-                  ? [0.05, 0.16, 0.11]
-                  : 0,
-            }}
-            transition={{
-              opacity: {
-                duration: 7,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
-            }}
-            style={{
-              pointerEvents: "none",
-              mixBlendMode: "screen",
-              filter:
-                "brightness(1.18) sepia(0.18) drop-shadow(0 0 10px rgba(255, 190, 112, 0.75)) drop-shadow(0 0 26px rgba(255, 166, 78, 0.42))",
-            }}
-          />
-
           <motion.img
             src={`${ASSET_BASE}/PERSON.png`}
             className="layer person-breathing"
             alt=""
             loading="eager"
             decoding="async"
-            animate={{ y: 0, x: 0, rotate: 0, scaleX: 1, scaleY: [1, 1.007, 1] }}
-            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-            style={{ transformOrigin: "50% 58%" }}
+            animate={
+              postBurnStage === "affirmation" ||
+              postBurnStage === "memory" ||
+              postBurnStage === "checkout" ||
+              postBurnStage === "card" ||
+              postBurnStage === "donation" ||
+              postBurnStage === "final"
+                ? {
+                    // A quiet release: gently lift the head/torso silhouette,
+                    // open the posture a touch, and keep breathing throughout.
+                    y: [0, -2, -3],
+                    x: [0, 1, 1],
+                    rotate: [0, -0.12, -0.12],
+                    scaleX: [1, 1.004, 1.004],
+                    scaleY: [1, 1.004, 1.004],
+                  }
+                : { y: 0, x: 0, rotate: 0, scaleX: 1, scaleY: [1, 1.007, 1] }
+            }
+            transition={
+              postBurnStage === "affirmation" ||
+              postBurnStage === "memory" ||
+              postBurnStage === "checkout" ||
+              postBurnStage === "card" ||
+              postBurnStage === "donation" ||
+              postBurnStage === "final"
+                ? {
+                    y: { duration: 5.5, ease: "easeInOut" },
+                    x: { duration: 5.5, ease: "easeInOut" },
+                    rotate: { duration: 5.5, ease: "easeInOut" },
+                    scaleX: { duration: 5.5, ease: "easeInOut" },
+                    scaleY: { duration: 5.5, ease: "easeInOut" },
+                  }
+                : { duration: 4.5, repeat: Infinity, ease: "easeInOut" }
+            }
+            style={{
+              transformOrigin: "50% 58%",
+              filter:
+                postBurnStage === "affirmation" ||
+                postBurnStage === "memory" ||
+                postBurnStage === "checkout" ||
+                postBurnStage === "card" ||
+                postBurnStage === "donation" ||
+                postBurnStage === "final"
+                  ? "drop-shadow(0 0 18px rgba(255, 196, 112, 0.13))"
+                  : "none",
+            }}
           />
 
           {staticLayers.map((layer) => (
