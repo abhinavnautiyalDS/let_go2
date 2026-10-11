@@ -907,10 +907,11 @@ body {
   to { opacity: 1; }
 }
 
-/* During the burn, let the compositor draw the paper/name above this SVG.
-   This keeps the visible fallback from floating over the fire. */
+/* Keep the live name between the paper compositor and the fire layer.
+   Putting it behind the paper canvas made it vanish the instant burning began.
+   The fire layer can still pass in front of the lettering as the burn progresses. */
 .name-overlay-svg--burning {
-  z-index: 509;
+  z-index: 535;
   animation: none;
   opacity: 1;
 }
