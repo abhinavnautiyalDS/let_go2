@@ -718,16 +718,6 @@ export default function Scene01() {
     fadeAudio(roomAudio.current, 0.03, 1800);
   }, [burning]);
 
-  useEffect(() => {
-    if (!burning) return;
-    if (nameWipeRafRef.current !== null) {
-      cancelAnimationFrame(nameWipeRafRef.current);
-      nameWipeRafRef.current = null;
-    }
-    const overlay = nameOverlayCanvasRef.current;
-    const ctx = overlay?.getContext("2d");
-    ctx?.clearRect(0, 0, W, H);
-  }, [burning]);
 
   // ─── PAPER PNG LOADING ─────────────────────────────────────────────
 
@@ -916,6 +906,18 @@ export default function Scene01() {
         // The compositor caches its paper layer. Mark it dirty so the newly
         // written name is included in the very first burn frame.
         burnMaskDirty.current = true;
+        // Before the fire starts, display the same inked paper that will be
+        // consumed by the burn compositor. No separate floating text layer.
+        if (!burning && burnCanvasRef.current) {
+          const visible = burnCanvasRef.current;
+          const visibleCtx = visible.getContext("2d");
+          if (visibleCtx) {
+            visible.width = W;
+            visible.height = H;
+            visibleCtx.clearRect(0, 0, W, H);
+            visibleCtx.drawImage(lrCanvas, 0, 0, W, H);
+          }
+        }
 
         if (lowResCompositeCanvas.current) {
           const compCtx = lowResCompositeCanvas.current.getContext("2d");
@@ -956,22 +958,8 @@ export default function Scene01() {
       fctx.restore();
     }
 
-    const overlay = nameOverlayCanvasRef.current;
-    if (overlay) {
-      // Set intrinsic dimensions before drawing. Resizing a canvas clears its
-      // bitmap, so do this before the wipe animation starts.
-      overlay.width = W;
-      overlay.height = H;
-    }
-    // Draw the full name immediately as a reliable fallback, then run the
-    // handwritten reveal over it. If the animation is interrupted by a state
-    // change, the name remains visible instead of disappearing completely.
-    const overlayCtx = overlay?.getContext("2d");
-    if (overlayCtx && nameFullCanvasRef.current) {
-      overlayCtx.clearRect(0, 0, W, H);
-      overlayCtx.drawImage(nameFullCanvasRef.current, 0, 0);
-    }
-    animateNameWipe(NAME_WIPE_DURATION_MS);
+    // No wipe animation: the visible name is already printed into the paper
+    // bitmap. The fire compositor will consume both using the same mask.
   }, [nameLocked, name, paperReady]);
 
   // Fit the keepsake name to the actual card content width. Thirty-character
@@ -1757,24 +1745,8 @@ export default function Scene01() {
             aria-hidden="true"
           />
 
-          {nameLocked && !paperBurned && paperNameLayout && (
-            <svg className={`name-overlay-svg${burning ? " name-overlay-svg--burning" : ""}`} viewBox="0 0 1280 720" preserveAspectRatio="none" aria-label={`Name written on the paper: ${name}`} role="img">
-              <text
-                x={(paperNameLayout.x + paperNameLayout.w / 2) * 1280}
-                y={(paperNameLayout.y + paperNameLayout.h / 2) * 720 - ((paperNameLayout.lines.length - 1) * paperNameLayout.lineHeight) / 2}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontFamily="Segoe Print, Bradley Hand, cursive"
-                fontSize={paperNameLayout.fontSize}
-                fontWeight="400"
-                fill="rgba(20,17,15,0.94)"
-              >
-                {paperNameLayout.lines.map((line, index) => (
-                  <tspan key={`${index}-${line}`} x={(paperNameLayout.x + paperNameLayout.w / 2) * 1280} dy={index === 0 ? 0 : paperNameLayout.lineHeight}>{line}</tspan>
-                ))}
-              </text>
-            </svg>
-          )}
+          {/* Ink is baked into the paper canvas and consumed by its burn mask.
+              Do not render an independent SVG: it would survive the fire. */}
 
           <canvas
             ref={ashCanvasRef}
