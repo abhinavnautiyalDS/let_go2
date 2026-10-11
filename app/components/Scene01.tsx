@@ -1831,6 +1831,7 @@ export default function Scene01() {
 
           {/* ─── RELEASE RAYS & DUST ────────────────────────────────── */}
           {(postBurnStage === "release" ||
+            postBurnStage === "affirmation" ||
             postBurnStage === "memory" ||
             postBurnStage === "checkout" ||
             postBurnStage === "card" ||
@@ -1841,9 +1842,9 @@ export default function Scene01() {
                 src={`${ASSET_BASE}/release/release-rays.png`}
                 className="release-rays"
                 style={{
-                  // Window light rays should hold the same brightness after
-                  // their entrance ramp, including while affirmations are shown.
-                  opacity: 0.14,
+                  // Fade the window rays in during release, then keep their
+                  // settled opacity unchanged through affirmations and afterward.
+                  opacity: releaseRaysOpacity,
                   position: "absolute",
                   left: 0,
                   top: 0,
