@@ -1692,8 +1692,52 @@ export default function Scene01() {
             alt=""
             loading="eager"
             decoding="async"
-            animate={{ scaleY: [1, 1.007, 1] }}
-            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+            animate={
+              postBurnStage === "affirmation" ||
+              postBurnStage === "memory" ||
+              postBurnStage === "checkout" ||
+              postBurnStage === "card" ||
+              postBurnStage === "donation" ||
+              postBurnStage === "final"
+                ? {
+                    // A quiet release: gently lift the head/torso silhouette,
+                    // open the posture a touch, and keep breathing throughout.
+                    y: [0, -2, -3],
+                    x: [0, 1, 1],
+                    rotate: [0, -0.12, -0.12],
+                    scaleX: [1, 1.004, 1.004],
+                    scaleY: [1, 1.004, 1.004],
+                  }
+                : { y: 0, x: 0, rotate: 0, scaleX: 1, scaleY: [1, 1.007, 1] }
+            }
+            transition={
+              postBurnStage === "affirmation" ||
+              postBurnStage === "memory" ||
+              postBurnStage === "checkout" ||
+              postBurnStage === "card" ||
+              postBurnStage === "donation" ||
+              postBurnStage === "final"
+                ? {
+                    y: { duration: 5.5, ease: "easeInOut" },
+                    x: { duration: 5.5, ease: "easeInOut" },
+                    rotate: { duration: 5.5, ease: "easeInOut" },
+                    scaleX: { duration: 5.5, ease: "easeInOut" },
+                    scaleY: { duration: 5.5, ease: "easeInOut" },
+                  }
+                : { duration: 4.5, repeat: Infinity, ease: "easeInOut" }
+            }
+            style={{
+              transformOrigin: "50% 58%",
+              filter:
+                postBurnStage === "affirmation" ||
+                postBurnStage === "memory" ||
+                postBurnStage === "checkout" ||
+                postBurnStage === "card" ||
+                postBurnStage === "donation" ||
+                postBurnStage === "final"
+                  ? "drop-shadow(0 0 18px rgba(255, 196, 112, 0.13))"
+                  : "none",
+            }}
           />
 
           {staticLayers.map((layer) => (
