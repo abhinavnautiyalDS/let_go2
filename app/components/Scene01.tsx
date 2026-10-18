@@ -703,9 +703,10 @@ export default function Scene01() {
   useEffect(() => {
     if (!nameLocked) return;
     fadeAudio(roomAudio.current, 0.05, 400);
-    // Let the handwritten name finish appearing before the fire starts.
-    // This gives the user a clear moment to see it on the paper.
-    const timer = trackedTimeout(() => setBurning(true), 4500);
+    // Keep a short, intentional pause after the name is written, then start
+    // the source fire footage. The burn mask itself remains driven by visible
+    // flame heat, not by this timer.
+    const timer = trackedTimeout(() => setBurning(true), 2500);
     return () => window.clearTimeout(timer);
   }, [nameLocked]);
 
@@ -1198,8 +1199,11 @@ export default function Scene01() {
             const fireAlpha = burnHeat[idx * 4 + 3] / 255;
             if (fireAlpha < 0.025) continue;
             if (alphaArr[idx] <= 0.01) continue;
-            const heatGain = 0.008 + fireAlpha * 0.024;
-            mask[idx] = Math.min(1, mask[idx] + heatGain * fireAlpha * 0.6);
+            // Let the visible flame lead the burn instead of consuming the
+            // sheet almost immediately when a warm pixel flickers in the source.
+            // Heat is accumulated only where the thermal mask detects real flame.
+            const heatGain = 0.004 + fireAlpha * 0.014;
+            mask[idx] = Math.min(1, mask[idx] + heatGain * fireAlpha * 0.42);
           }
         }
 
