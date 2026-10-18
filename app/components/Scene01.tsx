@@ -705,7 +705,7 @@ export default function Scene01() {
     fadeAudio(roomAudio.current, 0.05, 400);
     // Let the handwritten name finish appearing before the fire starts.
     // This gives the user a clear moment to see it on the paper.
-    const timer = trackedTimeout(() => setBurning(true), 1650);
+    const timer = trackedTimeout(() => setBurning(true), 4500);
     return () => window.clearTimeout(timer);
   }, [nameLocked]);
 
