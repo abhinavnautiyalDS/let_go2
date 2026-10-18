@@ -739,6 +739,8 @@ export default function Scene01() {
   const burnMask = useRef<Float32Array>(new Float32Array(SOURCE_W * SOURCE_H));
   const tempDiffusion = useRef<Float32Array>(new Float32Array(SOURCE_W * SOURCE_H));
   const fireMaskData = useRef<Uint8ClampedArray>(new Uint8ClampedArray(SOURCE_W * SOURCE_H * 4));
+  // Separate thermal mask: smoke/motion may render, but should not consume paper.
+  const burnHeatData = useRef<Uint8ClampedArray>(new Uint8ClampedArray(SOURCE_W * SOURCE_H * 4));
   const compositeData = useRef<Uint8ClampedArray>(new Uint8ClampedArray(SOURCE_W * SOURCE_H * 4));
   const burnMaskImageData = useRef<Uint8ClampedArray>(new Uint8ClampedArray(SOURCE_W * SOURCE_H * 4));
   const charImageData = useRef<Uint8ClampedArray>(new Uint8ClampedArray(SOURCE_W * SOURCE_H * 4));
@@ -1092,6 +1094,7 @@ export default function Scene01() {
       }
 
       const fireMask = fireMaskData.current;
+      const burnHeat = burnHeatData.current;
       const initPx = initialFrameRef.current!;
       const prevPx = previousFrameRef.current!;
 
@@ -1101,6 +1104,7 @@ export default function Scene01() {
         const sourceAlpha = chromaAlpha(r, g, b) / 255;
         if (sourceAlpha <= 0.01) {
           fireMask[i + 3] = 0;
+          burnHeat[i + 3] = 0;
           continue;
         }
 
@@ -1126,6 +1130,9 @@ export default function Scene01() {
         // Slightly strengthen the flame layer while keeping its highlights
         // bounded, so the paper's burn edge remains visible.
         const alpha = Math.round(Math.max(0, Math.min(1, effect * 1.22)) * sourceAlpha * 255);
+        // Only warm, bright flame pixels contribute heat; smoke stays visual only.
+        const flameHeat = Math.max(0, Math.min(1, brightWarm * 1.15));
+        burnHeat[i + 3] = Math.round(flameHeat * sourceAlpha * 255);
 
         const spill = Math.max(0, g - Math.max(r, b));
         const cleanG = Math.round(g - spill * 0.42);
@@ -1187,7 +1194,7 @@ export default function Scene01() {
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
             const idx = y * w + x;
-            const fireAlpha = fireMask[idx * 4 + 3] / 255;
+            const fireAlpha = burnHeat[idx * 4 + 3] / 255;
             if (fireAlpha < 0.025) continue;
             if (alphaArr[idx] <= 0.01) continue;
             const heatGain = 0.008 + fireAlpha * 0.024;
