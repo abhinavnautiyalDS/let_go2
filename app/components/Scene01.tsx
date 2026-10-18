@@ -1267,8 +1267,11 @@ export default function Scene01() {
               const ashAlpha = paperAlpha * Math.max(0, Math.min(1, 0.04 + ashPatch * 0.09));
               comp[mi] = 42; comp[mi+1] = 37; comp[mi+2] = 32; comp[mi+3] = Math.round(ashAlpha * 255);
             } else {
-              const charStrength = paperAlpha * smoothstep(0.18, 0.58, d) * (1 - consumed * 0.65);
-              charImg[mi] = 32; charImg[mi+1] = 20; charImg[mi+2] = 12; charImg[mi+3] = Math.round(charStrength * 150);
+              // Keep the paper's printed ink legible while the surrounding sheet chars.
+              // A heavy dark overlay was reducing contrast so the name appeared to
+              // vanish before its paper pixels were actually consumed.
+              const charStrength = paperAlpha * smoothstep(0.24, 0.68, d) * (1 - consumed * 0.18);
+              charImg[mi] = 32; charImg[mi+1] = 20; charImg[mi+2] = 12; charImg[mi+3] = Math.round(charStrength * 48);
 
               const activeEdge = paperAlpha * smoothstep(0.20, 0.42, d) * (1 - smoothstep(0.55, 0.78, d));
               edgeImg[mi] = 255; edgeImg[mi+1] = 108; edgeImg[mi+2] = 22; edgeImg[mi+3] = Math.round(activeEdge * 52);
