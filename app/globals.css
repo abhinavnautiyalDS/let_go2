@@ -1298,7 +1298,8 @@ body {
 }
 
 .card-botanical-top {
-  top: 30px;
+  top: 54px;
+  width: min(128px, 26%);
 }
 
 .card-botanical-bottom {
@@ -1320,7 +1321,12 @@ body {
 }
 
 .card-kicker {
-  margin: 0 0 18px;
+  position: absolute;
+  top: 6.5%;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  margin: 0;
   font-size: clamp(9px, 1vw, 11px);
   font-weight: 400;
   letter-spacing: 0.34em;
@@ -1330,13 +1336,14 @@ body {
 }
 
 .card-ornament-img {
-  width: 62px;
+  width: 52px;
   height: auto;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
+  opacity: 0.62;
 }
 
 .card-title {
-  margin: 0 0 28px;
+  margin: 0 0 22px;
   font-family: "EB Garamond", "Cormorant Garamond", Georgia, serif;
   color: rgba(54, 39, 27, 0.96);
   display: flex;
@@ -1362,9 +1369,12 @@ body {
 }
 
 .card-body {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
+  max-width: 100%;
 }
 
 .card-subtitle {
@@ -1387,14 +1397,19 @@ body {
 }
 
 .card-date {
-  margin: 0 0 26px;
+  margin: 0 0 16px;
   font-size: clamp(10px, 1vw, 12px);
   letter-spacing: 0.14em;
   color: rgba(45, 30, 18, 0.7);
 }
 
 .card-quote {
-  margin: 0;
+  position: relative;
+  z-index: 2;
+  margin: 2px 0 0;
+  padding: 5px 12px;
+  background: rgba(242, 232, 213, 0.62);
+  border-radius: 2px;
   font-size: clamp(13px, 1.2vw, 16px);
   font-weight: 300;
   font-style: italic;
@@ -1405,7 +1420,7 @@ body {
 .card-landscape {
   position: absolute;
   left: 50%;
-  bottom: 96px;
+  bottom: 112px;
   transform: translateX(-50%);
   width: 68%;
   max-width: 400px;
@@ -1482,8 +1497,9 @@ body {
     font-size: 34px;
   }
   .card-landscape {
-    width: 68%;
-    bottom: 78px;
+    width: 72%;
+    bottom: 92px;
+    opacity: 0.62;
   }
   .card-actions {
     bottom: 22px;
@@ -1503,7 +1519,8 @@ body {
     width: min(120px, 32%);
   }
   .card-botanical-top {
-    top: 20px;
+    top: 38px;
+    width: min(104px, 25%);
   }
   .card-botanical-bottom {
     bottom: 20px;
@@ -1519,9 +1536,9 @@ body {
     font-size: 27px;
   }
   .card-landscape {
-    width: 62%;
-    bottom: 66px;
-    opacity: 0.16;
+    width: 66%;
+    bottom: 82px;
+    opacity: 0.42;
   }
   .card-actions {
     bottom: 18px;
