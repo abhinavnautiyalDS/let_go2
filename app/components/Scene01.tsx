@@ -1127,9 +1127,10 @@ export default function Scene01() {
         const changed = smoothstep(18, 70, diff);
         const smokeLike = changed * smoothstep(35, 180, luminance) * (1 - smoothstep(0.28, 0.62, saturation));
         const effect = Math.max(changed, brightWarm * 0.95, motion * 0.75, smokeLike * 0.65);
-        // Slightly strengthen the flame layer while keeping its highlights
-        // bounded, so the paper's burn edge remains visible.
-        const alpha = Math.round(Math.max(0, Math.min(1, effect * 1.22)) * sourceAlpha * 255);
+        // Keep the fire/smoke overlay translucent over the paper. The source
+        // video has broad motion and smoke regions; making those nearly opaque
+        // hides the handwritten ink before the paper's burn mask reaches it.
+        const alpha = Math.round(Math.max(0, Math.min(1, effect * 0.62)) * sourceAlpha * 255);
         // Only warm, bright flame pixels contribute heat; smoke stays visual only.
         const flameHeat = Math.max(0, Math.min(1, brightWarm * 1.15));
         burnHeat[i + 3] = Math.round(flameHeat * sourceAlpha * 255);
