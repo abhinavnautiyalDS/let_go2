@@ -2394,7 +2394,7 @@ export default function Scene01() {
                   alt=""
                   aria-hidden="true"
                   initial={{ opacity: 0, scaleX: 0.6 }}
-                  animate={{ opacity: 20, scaleX: 2 }}
+                  animate={{ opacity: 0.62, scaleX: 1 }}
                   transition={{ duration: 1.2, delay: 1.4 }}
                 />
 
