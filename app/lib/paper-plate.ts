@@ -120,10 +120,27 @@ export function renderPaperPlate({
   const px = frame.data;
   const keyed = pctx.createImageData(width, height);
   for (let i = 0; i < px.length; i += 4) {
-    keyed.data[i] = px[i];
-    keyed.data[i + 1] = px[i + 1];
-    keyed.data[i + 2] = px[i + 2];
-    keyed.data[i + 3] = greenAlpha(px[i], px[i + 1], px[i + 2]);
+    const r = px[i], g = px[i + 1], b = px[i + 2];
+    // Preserve the original green-screen decision before grading RGB.
+    keyed.data[i + 3] = greenAlpha(r, g, b);
+
+    // V16 cinematic grade: restrained contrast, warmer paper mids, and a
+    // brighter golden response in warm flame highlights. Smoke stays neutral.
+    const luminance = (r * 0.2126 + g * 0.7152 + b * 0.0722);
+    const paper = isPaper(r, g, b);
+    const warmFlame = r > g && g > b && luminance > 78
+      ? Math.max(0, Math.min(1, (r - g + 10) / 58)) *
+        Math.max(0, Math.min(1, (g - b + 8) / 72)) *
+        Math.max(0, Math.min(1, (luminance - 65) / 115))
+      : 0;
+    const contrast = (value: number) => (value - 112) * 1.055 + 112;
+    const warmth = paper ? 1 : warmFlame;
+    keyed.data[i] = Math.max(0, Math.min(255,
+      contrast(r) + (paper ? 5 : warmth * 12)));
+    keyed.data[i + 1] = Math.max(0, Math.min(255,
+      contrast(g) + (paper ? 2 : warmth * 15)));
+    keyed.data[i + 2] = Math.max(0, Math.min(255,
+      contrast(b) - (paper ? 5 : warmth * 13)));
   }
   pctx.putImageData(keyed, 0, 0);
 
@@ -131,7 +148,27 @@ export function renderPaperPlate({
   const targetHeight = target.height || 720;
   tctx.clearRect(0, 0, targetWidth, targetHeight);
   tctx.imageSmoothingEnabled = true;
-  tctx.drawImage(plate, 0, 0, targetWidth, targetHeight);
+  // A restrained 6% push-in gives the burn plate a more intentional,
+  // cinematic composition without cutting away the paper at the edges.
+  const zoom = 1.06;
+  const drawW = targetWidth * zoom;
+  const drawH = targetHeight * zoom;
+  tctx.drawImage(plate, (targetWidth - drawW) / 2, (targetHeight - drawH) / 2, drawW, drawH);
+
+  // Soft amber bloom around the lower-centre fire. Kept subtle so the real
+  // practical flame remains the light source and the handwritten name stays crisp.
+  const glow = tctx.createRadialGradient(
+    targetWidth * 0.51, targetHeight * 0.67, targetWidth * 0.012,
+    targetWidth * 0.51, targetHeight * 0.67, targetWidth * 0.29
+  );
+  glow.addColorStop(0, "rgba(255, 174, 72, 0.105)");
+  glow.addColorStop(0.42, "rgba(255, 137, 48, 0.045)");
+  glow.addColorStop(1, "rgba(255, 120, 35, 0)");
+  tctx.save();
+  tctx.globalCompositeOperation = "screen";
+  tctx.fillStyle = glow;
+  tctx.fillRect(0, 0, targetWidth, targetHeight);
+  tctx.restore();
 
   if (!name.trim()) return true;
   const axes = findPaperAxes(px, width, height);
