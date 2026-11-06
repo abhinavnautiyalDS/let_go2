@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { renderPaperPlate } from "../lib/paper-plate";
 
 // ─── ASSET PATHS ────────────────────────────────────────────────────────────
 const ASSET_BASE = "/assets/scene-01";
@@ -1085,6 +1086,35 @@ export default function Scene01() {
       const frame = sourceCtx.getImageData(0, 0, SOURCE_W, SOURCE_H);
       const px = frame.data;
 
+      // Real-plate path: the source footage contains the moving, curling sheet.
+      // Key the green screen and print the visitor's name onto the detected
+      // paper plane each decoded frame. This replaces the synthetic burn-mask
+      // rendering below for the live ritual.
+      renderPaperPlate({ video, target: fireCanvas, name });
+      const plateFinished =
+        video.ended || video.currentTime >= duration - 0.08;
+      if (plateFinished) {
+        const ashCanvas = ashCanvasRef.current;
+        if (ashCanvas) {
+          ashCanvas.width = W;
+          ashCanvas.height = H;
+          const ashCtx = ashCanvas.getContext("2d");
+          if (ashCtx) {
+            ashCtx.clearRect(0, 0, W, H);
+            ashCtx.drawImage(fireCanvas, 0, 0, W, H);
+          }
+        }
+        compositorEnded.current = true;
+        setPaperBurned(true);
+        ended = true;
+        loopId.current = null;
+        return;
+      }
+      // The footage is now the paper + fire composite. Do not run the old
+      // synthetic thermal mask or paint its static paper layer over the plate.
+      scheduleNext();
+      return;
+
       if (!hasInitialRef.current) {
         const init = new Uint8ClampedArray(px);
         initialFrameRef.current = init;
@@ -1407,6 +1437,11 @@ export default function Scene01() {
       hasInitialRef.current = true;
       hasPreviousRef.current = true;
       compositorReady.current = true;
+
+      const paperLayerCtx = burnCanvas.getContext("2d");
+      paperLayerCtx?.clearRect(0, 0, W, H);
+      const ashLayerCtx = ashCanvasRef.current?.getContext("2d");
+      ashLayerCtx?.clearRect(0, 0, W, H);
 
       video.currentTime = 0;
       video.play().catch(() => { });
