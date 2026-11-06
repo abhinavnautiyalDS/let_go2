@@ -231,6 +231,6 @@ export function renderPaperPlate({
     }
   }
   ictx.putImageData(inkFrame, 0, 0);
-  tctx.drawImage(ink, 0, 0, targetWidth, targetHeight);
+  tctx.drawImage(ink, (targetWidth - drawW) / 2, (targetHeight - drawH) / 2, drawW, drawH);
   return true;
 }
