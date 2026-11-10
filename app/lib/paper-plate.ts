@@ -12,6 +12,7 @@ export type PaperPlateOptions = {
   target: HTMLCanvasElement;
   name: string;
   fontFamily?: string;
+  opacity?: number;
 };
 
 type Point = { x: number; y: number };
@@ -103,7 +104,7 @@ function getCache(target: HTMLCanvasElement, video: HTMLVideoElement): PlateCach
  * dimensions and CSS transform.
  */
 export function renderPaperPlate({
-  video, target, name,
+  video, target, name, opacity = 1,
   fontFamily = '"Segoe Print", "Bradley Hand", cursive',
 }: PaperPlateOptions): boolean {
   if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) return false;
@@ -149,6 +150,7 @@ export function renderPaperPlate({
   const targetHeight = target.height || 720;
   tctx.clearRect(0, 0, targetWidth, targetHeight);
   tctx.imageSmoothingEnabled = true;
+  tctx.globalAlpha = Math.max(0, Math.min(1, opacity));
   // A restrained 6% push-in gives the burn plate a more intentional,
   // cinematic composition without cutting away the paper at the edges.
   const zoom = 1.06;
@@ -171,9 +173,15 @@ export function renderPaperPlate({
   tctx.fillRect(0, 0, targetWidth, targetHeight);
   tctx.restore();
 
-  if (!name.trim()) return true;
+  if (!name.trim()) {
+    tctx.globalAlpha = 1;
+    return true;
+  }
   const axes = findPaperAxes(px, width, height);
-  if (!axes) return true;
+  if (!axes) {
+    tctx.globalAlpha = 1;
+    return true;
+  }
 
   // Stabilise the detected paper coordinate frame across decoded frames.
   // PCA can flip its principal axis by 180 degrees as the sheet curls or burns;
@@ -262,5 +270,6 @@ export function renderPaperPlate({
   }
   ictx.putImageData(inkFrame, 0, 0);
   tctx.drawImage(ink, (targetWidth - drawW) / 2, (targetHeight - drawH) / 2, drawW, drawH);
+  tctx.globalAlpha = 1;
   return true;
 }
