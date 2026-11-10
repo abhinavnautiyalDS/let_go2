@@ -1051,6 +1051,31 @@ export default function Scene01() {
 
     let ended = false;
     let lastTime = -1;
+    let firstPlateFrameRendered = false;
+
+    const finishPlate = () => {
+      if (ended || compositorEnded.current) return;
+      // Capture the actual terminal frame even if the browser stops issuing
+      // video-frame callbacks as soon as playback reaches "ended".
+      if (video.readyState >= 2) {
+        renderPaperPlate({ video, target: fireCanvas, name });
+      }
+      const ashCanvas = ashCanvasRef.current;
+      if (ashCanvas) {
+        ashCanvas.width = W;
+        ashCanvas.height = H;
+        const ashCtx = ashCanvas.getContext("2d");
+        if (ashCtx) {
+          ashCtx.clearRect(0, 0, W, H);
+          ashCtx.drawImage(fireCanvas, 0, 0, W, H);
+        }
+      }
+      compositorEnded.current = true;
+      setPaperBurned(true);
+      ended = true;
+      renderActive.current = false;
+      loopId.current = null;
+    };
 
     const render = () => {
       if (ended || !renderActive.current || compositorEnded.current) {
@@ -1091,23 +1116,18 @@ export default function Scene01() {
       // paper plane each decoded frame. This replaces the synthetic burn-mask
       // rendering below for the live ritual.
       renderPaperPlate({ video, target: fireCanvas, name });
+      // Keep the still paper visible until the first real fire-video frame has
+      // been painted. Clearing it before the first decoded frame caused the
+      // paper to blink out, then pop back in when the compositor caught up.
+      if (!firstPlateFrameRendered) {
+        firstPlateFrameRendered = true;
+        const paperCtx = burnCanvas.getContext("2d");
+        paperCtx?.clearRect(0, 0, W, H);
+      }
       const plateFinished =
         video.ended || video.currentTime >= duration - 0.08;
       if (plateFinished) {
-        const ashCanvas = ashCanvasRef.current;
-        if (ashCanvas) {
-          ashCanvas.width = W;
-          ashCanvas.height = H;
-          const ashCtx = ashCanvas.getContext("2d");
-          if (ashCtx) {
-            ashCtx.clearRect(0, 0, W, H);
-            ashCtx.drawImage(fireCanvas, 0, 0, W, H);
-          }
-        }
-        compositorEnded.current = true;
-        setPaperBurned(true);
-        ended = true;
-        loopId.current = null;
+        finishPlate();
         return;
       }
       // The footage is now the paper + fire composite. Do not run the old
@@ -1136,12 +1156,14 @@ export default function Scene01() {
       hasPreviousRef.current = true;
       compositorReady.current = true;
 
-      const paperLayerCtx = burnCanvas.getContext("2d");
-      paperLayerCtx?.clearRect(0, 0, W, H);
+      // Do not clear the paper layer here. The source video may need another
+      // decoded frame before the compositor can paint; keep the paper visible
+      // until that first live frame is ready.
       const ashLayerCtx = ashCanvasRef.current?.getContext("2d");
       ashLayerCtx?.clearRect(0, 0, W, H);
 
       video.currentTime = 0;
+      video.addEventListener("ended", finishPlate, { once: true });
       video.play().catch(() => { });
       videoEndedRef.current = false;
 
