@@ -27,6 +27,7 @@ type PlateCache = {
   height: number;
   sheetW: number;
   sheetH: number;
+  lastAxes: PaperAxes | null;
 };
 const caches = new WeakMap<HTMLCanvasElement, PlateCache>();
 
@@ -91,7 +92,7 @@ function getCache(target: HTMLCanvasElement, video: HTMLVideoElement): PlateCach
   const ink = document.createElement("canvas");
   source.width = plate.width = ink.width = width;
   source.height = plate.height = ink.height = height;
-  const next = { source, plate, ink, width, height, sheetW: 0, sheetH: 0 };
+  const next = { source, plate, ink, width, height, sheetW: 0, sheetH: 0, lastAxes: null };
   caches.set(target, next);
   return next;
 }
@@ -174,6 +175,35 @@ export function renderPaperPlate({
   const axes = findPaperAxes(px, width, height);
   if (!axes) return true;
 
+  // Stabilise the detected paper coordinate frame across decoded frames.
+  // PCA can flip its principal axis by 180 degrees as the sheet curls or burns;
+  // align it to the previous frame, then ease small detector jitters.
+  const previous = cache.lastAxes;
+  if (previous) {
+    const dot = axes.ux * previous.ux + axes.uy * previous.uy;
+    if (dot < 0) {
+      axes.ux *= -1; axes.uy *= -1;
+      axes.vx *= -1; axes.vy *= -1;
+      const oldMinU = axes.minU, oldMaxU = axes.maxU;
+      const oldMinV = axes.minV, oldMaxV = axes.maxV;
+      axes.minU = -oldMaxU; axes.maxU = -oldMinU;
+      axes.minV = -oldMaxV; axes.maxV = -oldMinV;
+    }
+    const blend = 0.34;
+    const mix = (a: number, b: number) => a + (b - a) * blend;
+    axes.cx = mix(previous.cx, axes.cx);
+    axes.cy = mix(previous.cy, axes.cy);
+    axes.ux = mix(previous.ux, axes.ux);
+    axes.uy = mix(previous.uy, axes.uy);
+    const norm = Math.hypot(axes.ux, axes.uy) || 1;
+    axes.ux /= norm; axes.uy /= norm;
+    axes.vx = -axes.uy; axes.vy = axes.ux;
+    axes.minU = mix(previous.minU, axes.minU);
+    axes.maxU = mix(previous.maxU, axes.maxU);
+    axes.minV = mix(previous.minV, axes.minV);
+    axes.maxV = mix(previous.maxV, axes.maxV);
+  }
+  cache.lastAxes = { ...axes };
   const currentW = axes.maxU - axes.minU;
   const currentH = axes.maxV - axes.minV;
   // Lock the sheet's scale from its first clean frame. Later frames may show
