@@ -1057,8 +1057,11 @@ export default function Scene01() {
       if (ended || compositorEnded.current) return;
       // Capture the actual terminal frame even if the browser stops issuing
       // video-frame callbacks as soon as playback reaches "ended".
+      // The source clip already resolves from flame to a real ash bed.
+      // Preserve its final keyed frame at full opacity; the old code rendered
+      // this frame at opacity 0 and then copied that transparent canvas to ash.
       if (video.readyState >= 2) {
-        renderPaperPlate({ video, target: fireCanvas, name, opacity: 0 });
+        renderPaperPlate({ video, target: fireCanvas, name, opacity: 1 });
       }
       const ashCanvas = ashCanvasRef.current;
       if (ashCanvas) {
@@ -1070,6 +1073,10 @@ export default function Scene01() {
           ashCtx.drawImage(fireCanvas, 0, 0, W, H);
         }
       }
+      // Ash is now a separate persistent layer. Remove the live plate so no
+      // stale flame/paper frame remains stacked beneath the ash snapshot.
+      const fireCtx = fireCanvas.getContext("2d");
+      fireCtx?.clearRect(0, 0, W, H);
       compositorEnded.current = true;
       setPaperBurned(true);
       ended = true;
@@ -1118,10 +1125,10 @@ export default function Scene01() {
       // Let the flame, paper and visitor's ink resolve together during the
       // final portion of the practical footage instead of freezing a live fire
       // frame over the post-burn room.
-      const fadeStart = 0.9;
-      const fadeT = Math.max(0, Math.min(1, (progress - fadeStart) / (1 - fadeStart)));
-      const plateOpacity = 1 - fadeT * fadeT * (3 - 2 * fadeT);
-      renderPaperPlate({ video, target: fireCanvas, name, opacity: plateOpacity });
+      // Let the practical footage perform the burn. It naturally chars,
+      // curls and resolves into ash; fading the entire plate in the last 10%
+      // erased the ash as well as the flames and contradicted the V16 reference.
+      renderPaperPlate({ video, target: fireCanvas, name, opacity: 1 });
       // Keep the still paper visible until the first real fire-video frame has
       // been painted. Clearing it before the first decoded frame caused the
       // paper to blink out, then pop back in when the compositor caught up.
@@ -1168,7 +1175,17 @@ export default function Scene01() {
       const ashLayerCtx = ashCanvasRef.current?.getContext("2d");
       ashLayerCtx?.clearRect(0, 0, W, H);
 
+      video.pause();
+      // Paint the exact first decoded video frame before removing the static
+      // paper PNG. This makes the handoff deterministic instead of allowing
+      // the first animation callback to replace the paper several frames later.
       video.currentTime = 0;
+      const firstFrameReady = renderPaperPlate({ video, target: fireCanvas, name, opacity: 1 });
+      if (firstFrameReady) {
+        const paperCtx = burnCanvas.getContext("2d");
+        paperCtx?.clearRect(0, 0, W, H);
+        firstPlateFrameRendered = true;
+      }
       video.addEventListener("ended", finishPlate, { once: true });
       video.play().catch(() => { });
       videoEndedRef.current = false;
