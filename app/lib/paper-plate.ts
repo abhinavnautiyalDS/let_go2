@@ -224,7 +224,7 @@ export function renderPaperPlate({
         ictx.textBaseline = "middle";
         ictx.font = `400 ${fontSize}px ${fontFamily}`;
         const maxWidth = sheetW * 0.76;
-        const words = name.trim().split(/\\s+/);
+        const words = name.trim().split(/\s+/);
         const lines: string[] = [];
         let line = "";
         for (const word of words) {
