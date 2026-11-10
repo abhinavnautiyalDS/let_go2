@@ -1050,7 +1050,6 @@ export default function Scene01() {
     previousFrameRef.current = new Uint8ClampedArray(SOURCE_W * SOURCE_H * 4);
 
     let ended = false;
-    let lastTime = -1;
     let firstPlateFrameRendered = false;
 
     const finishPlate = () => {
@@ -1108,10 +1107,6 @@ export default function Scene01() {
         scheduleNext();
         return;
       }
-
-      const progress = Math.max(0, Math.min(1, video.currentTime / duration));
-      const timeChanged = Math.abs(video.currentTime - lastTime) > 0.005;
-      if (timeChanged) lastTime = video.currentTime;
 
       sourceCtx.clearRect(0, 0, SOURCE_W, SOURCE_H);
       sourceCtx.drawImage(video, 0, 0, SOURCE_W, SOURCE_H);
