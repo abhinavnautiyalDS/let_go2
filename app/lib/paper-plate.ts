@@ -24,6 +24,7 @@ type PlateCache = {
   source: HTMLCanvasElement;
   plate: HTMLCanvasElement;
   ink: HTMLCanvasElement;
+  effects: HTMLCanvasElement;
   width: number;
   height: number;
   sheetW: number;
@@ -129,9 +130,10 @@ function getCache(target: HTMLCanvasElement, video: HTMLVideoElement): PlateCach
   const source = document.createElement("canvas");
   const plate = document.createElement("canvas");
   const ink = document.createElement("canvas");
-  source.width = plate.width = ink.width = width;
-  source.height = plate.height = ink.height = height;
-  const next = { source, plate, ink, width, height, sheetW: 0, sheetH: 0, lastAxes: null };
+  const effects = document.createElement("canvas");
+  source.width = plate.width = ink.width = effects.width = width;
+  source.height = plate.height = ink.height = effects.height = height;
+  const next = { source, plate, ink, effects, width, height, sheetW: 0, sheetH: 0, lastAxes: null };
   caches.set(target, next);
   return next;
 }
@@ -142,22 +144,29 @@ export function renderPaperPlate({
 }: PaperPlateOptions): boolean {
   if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) return false;
   const cache = getCache(target, video);
-  const { source, plate, ink, width, height } = cache;
+  const { source, plate, ink, effects, width, height } = cache;
   const sctx = source.getContext("2d", { willReadFrequently: true });
   const pctx = plate.getContext("2d");
   const ictx = ink.getContext("2d", { willReadFrequently: true });
+  const ectx = effects.getContext("2d");
   const tctx = target.getContext("2d");
-  if (!sctx || !pctx || !ictx || !tctx) return false;
+  if (!sctx || !pctx || !ictx || !ectx || !tctx) return false;
 
   sctx.drawImage(video, 0, 0, width, height);
   const frame = sctx.getImageData(0, 0, width, height);
   const px = frame.data;
   const keyed = pctx.createImageData(width, height);
+  const foreground = ectx.createImageData(width, height);
   for (let i = 0; i < px.length; i += 4) {
     const r = px[i], g = px[i + 1], b = px[i + 2];
-    keyed.data[i + 3] = greenAlpha(r, g, b);
-    const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
+    const alpha = greenAlpha(r, g, b);
     const paper = isPaper(r, g, b);
+    // Keep the paper and the real fire/smoke/ash on separate layers. Ink is
+    // multiplied into paper first, then the practical flame is composited
+    // above it, matching the V16 "burning through the writing" appearance.
+    keyed.data[i + 3] = paper ? alpha : 0;
+    foreground.data[i + 3] = paper ? 0 : alpha;
+    const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
     const warmFlame = r > g && g > b && luminance > 78
       ? Math.max(0, Math.min(1, (r - g + 10) / 58)) *
         Math.max(0, Math.min(1, (g - b + 8) / 72)) *
@@ -165,11 +174,16 @@ export function renderPaperPlate({
       : 0;
     const contrast = (value: number) => (value - 112) * 1.055 + 112;
     const warmth = paper ? 1 : warmFlame;
-    keyed.data[i] = Math.max(0, Math.min(255, contrast(r) + (paper ? 5 : warmth * 12)));
-    keyed.data[i + 1] = Math.max(0, Math.min(255, contrast(g) + (paper ? 2 : warmth * 15)));
-    keyed.data[i + 2] = Math.max(0, Math.min(255, contrast(b) - (paper ? 5 : warmth * 13)));
+    const gradedR = Math.max(0, Math.min(255, contrast(r) + (paper ? 5 : warmth * 12)));
+    const gradedG = Math.max(0, Math.min(255, contrast(g) + (paper ? 2 : warmth * 15)));
+    const gradedB = Math.max(0, Math.min(255, contrast(b) - (paper ? 5 : warmth * 13)));
+    const layer = paper ? keyed : foreground;
+    layer.data[i] = gradedR;
+    layer.data[i + 1] = gradedG;
+    layer.data[i + 2] = gradedB;
   }
   pctx.putImageData(keyed, 0, 0);
+  ectx.putImageData(foreground, 0, 0);
 
   const targetWidth = target.width || 1280;
   const targetHeight = target.height || 720;
@@ -273,6 +287,9 @@ export function renderPaperPlate({
       }
     }
   }
+
+  // Flame tongues, smoke and the final ash bed remain in front of the ink.
+  pctx.drawImage(effects, 0, 0);
 
   tctx.clearRect(0, 0, targetWidth, targetHeight);
   tctx.save();
