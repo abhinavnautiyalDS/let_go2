@@ -1016,6 +1016,7 @@ body {
   position: absolute;
   left: 0;
   top: 0;
+  z-index: 550;
   width: 1280px;
   height: 720px;
   pointer-events: none;
