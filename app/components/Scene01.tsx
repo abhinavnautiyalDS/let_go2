@@ -1113,16 +1113,9 @@ export default function Scene01() {
       const frame = sourceCtx.getImageData(0, 0, SOURCE_W, SOURCE_H);
       const px = frame.data;
 
-      // Real-plate path: the source footage contains the moving, curling sheet.
-      // Key the green screen and print the visitor's name onto the detected
-      // paper plane each decoded frame. This replaces the synthetic burn-mask
-      // rendering below for the live ritual.
-      // Let the flame, paper and visitor's ink resolve together during the
-      // final portion of the practical footage instead of freezing a live fire
-      // frame over the post-burn room.
-      // Let the practical footage perform the burn. It naturally chars,
-      // curls and resolves into ash; fading the entire plate in the last 10%
-      // erased the ash as well as the flames and contradicted the V16 reference.
+      // The source footage owns the moving paper, curls, flame, smoke and ash.
+      // The compositor keys it and embeds the visitor's ink into the paper
+      // before placing the practical fire/smoke layer above that ink.
       renderPaperPlate({ video, target: fireCanvas, name, opacity: 1 });
       // Keep the still paper visible until the first real fire-video frame has
       // been painted. Clearing it before the first decoded frame caused the
@@ -1170,11 +1163,9 @@ export default function Scene01() {
       const ashLayerCtx = ashCanvasRef.current?.getContext("2d");
       ashLayerCtx?.clearRect(0, 0, W, H);
 
-      video.pause();
       // Paint the exact first decoded video frame before removing the static
       // paper PNG. This makes the handoff deterministic instead of allowing
       // the first animation callback to replace the paper several frames later.
-      video.currentTime = 0;
       const firstFrameReady = renderPaperPlate({ video, target: fireCanvas, name, opacity: 1 });
       if (firstFrameReady) {
         const paperCtx = burnCanvas.getContext("2d");
