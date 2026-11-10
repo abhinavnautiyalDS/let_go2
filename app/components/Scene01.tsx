@@ -1058,7 +1058,7 @@ export default function Scene01() {
       // Capture the actual terminal frame even if the browser stops issuing
       // video-frame callbacks as soon as playback reaches "ended".
       if (video.readyState >= 2) {
-        renderPaperPlate({ video, target: fireCanvas, name });
+        renderPaperPlate({ video, target: fireCanvas, name, opacity: 0 });
       }
       const ashCanvas = ashCanvasRef.current;
       if (ashCanvas) {
@@ -1115,7 +1115,13 @@ export default function Scene01() {
       // Key the green screen and print the visitor's name onto the detected
       // paper plane each decoded frame. This replaces the synthetic burn-mask
       // rendering below for the live ritual.
-      renderPaperPlate({ video, target: fireCanvas, name });
+      // Let the flame, paper and visitor's ink resolve together during the
+      // final portion of the practical footage instead of freezing a live fire
+      // frame over the post-burn room.
+      const fadeStart = 0.9;
+      const fadeT = Math.max(0, Math.min(1, (progress - fadeStart) / (1 - fadeStart)));
+      const plateOpacity = 1 - fadeT * fadeT * (3 - 2 * fadeT);
+      renderPaperPlate({ video, target: fireCanvas, name, opacity: plateOpacity });
       // Keep the still paper visible until the first real fire-video frame has
       // been painted. Clearing it before the first decoded frame caused the
       // paper to blink out, then pop back in when the compositor caught up.
