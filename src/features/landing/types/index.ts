@@ -1,3 +1,5 @@
+import type { MouseEvent } from "react";
+
 export type LandingStep = {
   number: "1" | "2" | "3";
   title: string;
@@ -7,5 +9,5 @@ export type LandingStep = {
 
 export type LandingNavigation = {
   isTransitioning: boolean;
-  onBegin: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  onBegin: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
