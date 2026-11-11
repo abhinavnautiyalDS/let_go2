@@ -1,0 +1,100 @@
+"use client";
+
+import { motion } from "framer-motion";
+
+const staticLayers = [
+  "BACKGROUND.png",
+  "WINDOW.png",
+  "TABLE.png",
+  "CUP.png",
+  "LAMP.png",
+  "PERSON.png",
+];
+
+const rainDrops = Array.from({ length: 200 }, (_, index) => ({
+  left: (index * 11.73) % 85,
+  top: (index * 17.41) % 100,
+  delay: (index * 0.37) % 4,
+  duration: 0.9 + ((index * 0.09) % 0.6),
+  length: 14 + ((index * 16) % 22),
+  opacity: 0.3 + ((index * 0.07) % 0.28),
+}));
+
+export default function SceneBackground() {
+  return (
+    <>
+      <link
+        rel="preload"
+        as="image"
+        href="/assets/scene-01/BACKGROUND.png"
+        fetchPriority="high"
+      />
+      <link rel="preload" as="image" href="/assets/scene-01/WINDOW.png" />
+      <link rel="preload" as="image" href="/assets/scene-01/TABLE.png" />
+      <link rel="preload" as="image" href="/assets/scene-01/PERSON.png" />
+
+      <div className="scene-background-container">
+        <div className="scene-camera">
+          <motion.img
+            src="/assets/scene-01/PERSON.png"
+            className="layer person-breathing"
+            alt=""
+            animate={{ scaleY: [1, 1.007, 1] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {staticLayers.map((layer) => (
+            <img
+              key={layer}
+              src={`/assets/scene-01/${layer}`}
+              className="layer"
+              alt=""
+            />
+          ))}
+
+          <motion.div
+            className="lamp-glow"
+            animate={{ opacity: [0.48, 0.5, 0.48], scale: [1.03, 1.02, 1.03] }}
+            transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          <motion.img
+            src="/assets/scene-01/curtain.png"
+            className="layer curtain"
+            alt=""
+            animate={{ x: [0, 0, -2, 0, 0], rotate: [0, 0.5, -0.3, 0.4, 0] }}
+            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          <video
+            className="steam-video"
+            src="/assets/scene-01/steam.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+
+          <div className="rain" aria-hidden="true">
+            {rainDrops.map((drop, index) => (
+              <span
+                key={index}
+                className="raindrop"
+                style={{
+                  left: `${drop.left}%`,
+                  top: `${drop.top}%`,
+                  height: `${drop.length}px`,
+                  opacity: drop.opacity,
+                  animationDelay: `${drop.delay}s`,
+                  animationDuration: `${drop.duration}s`,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="film-grain" />
+        </div>
+      </div>
+    </>
+  );
+}
